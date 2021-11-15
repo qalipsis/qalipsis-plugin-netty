@@ -1,0 +1,14 @@
+server:
+  port: ${random.port}
+
+logging:
+  console: true
+  root: info
+  level:
+    "io.qalipsis.plugins.netty": INFO
+    #"io.qalipsis.plugins.netty.http": TRACE
+
+report:
+  export:
+    console:
+      enabled: true
