@@ -9,7 +9,6 @@ import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.slot
 import io.mockk.spyk
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepCreationContextImpl
@@ -17,7 +16,6 @@ import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.mqtt.MqttClientOptions
 import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublishStep
 import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublishStepSpecificationConverter
-import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublisherMetrics
 import io.qalipsis.plugins.netty.mqtt.spec.MqttVersion
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.mockk.WithMockk
@@ -37,9 +35,6 @@ internal class MqttPublishStepSpecificationConverterTest :
 
     @RelaxedMockK
     private lateinit var mockedClientOptions: MqttClientOptions
-
-    @RelaxedMockK
-    private lateinit var publisherMetrics: MqttPublisherMetrics
 
     @RelaxedMockK
     private lateinit var eventLoopGroupSupplier: EventLoopGroupSupplier
@@ -109,14 +104,15 @@ internal class MqttPublishStepSpecificationConverterTest :
             }
             protocol(MqttVersion.MQTT_3_1)
             clientName("clientTest")
+            monitoring {
+                events = false
+                meters = true
+            }
         }
         val creationContext = StepCreationContextImpl(scenarioSpecification, directedAcyclicGraph, spec)
         val spiedConverter = spyk(converter, recordPrivateCalls = true)
 
-        val stepIdSlot = slot<String>()
         every { spiedConverter["buildClientOptions"](refEq(spec.mqttPublishConfiguration)) } returns mockedClientOptions
-        every { spiedConverter["buildMetrics"](refEq(spec.mqttPublishConfiguration.metricsConfiguration), capture(stepIdSlot)) } returns publisherMetrics
-
         // when
         spiedConverter.convert<Unit, Map<String, *>>(
             creationContext as StepCreationContext<MqttPublishStepSpecificationImpl<*>>
@@ -125,12 +121,13 @@ internal class MqttPublishStepSpecificationConverterTest :
         // then
         creationContext.createdStep!!.let {
             assertThat(it).isInstanceOf(MqttPublishStep::class).all {
-                prop("id").isNotNull().isEqualTo(stepIdSlot.captured)
+                prop("id").isNotNull().isEqualTo("")
                 prop("mqttClientOptions").isEqualTo(mockedClientOptions)
                 prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
-                prop("metrics").isEqualTo(publisherMetrics)
                 prop("retryPolicy").isNull()
                 prop("recordsFactory").isNotNull()
+                prop("meterRegistry").isNotNull().isSameAs(meterRegistry)
+                prop("eventsLogger").isNull()
             }
         }
     }

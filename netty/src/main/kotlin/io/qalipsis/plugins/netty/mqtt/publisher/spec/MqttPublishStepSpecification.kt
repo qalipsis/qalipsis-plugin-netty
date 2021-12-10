@@ -4,6 +4,7 @@ import io.qalipsis.api.annotations.Spec
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.ConfigurableStepSpecification
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.NettyPluginSpecification
 import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublishRecord
 import io.qalipsis.plugins.netty.mqtt.spec.MqttAuthentication
@@ -22,9 +23,9 @@ interface MqttPublishStepSpecification<I> :
     fun connect(configurationBlock: MqttConnectionConfiguration.() -> Unit)
 
     /**
-     * Configures the metrics to apply, defaults to none.
+     * Configures the monitoring of the publish step..
      */
-    fun metrics(configurationBlock: MqttPublisherMetricsConfiguration.() -> Unit)
+    fun monitoring(monitoringConfig: StepMonitoringConfiguration.() -> Unit)
 
     /**
      * Defines the client name in the publisher client.
@@ -57,14 +58,16 @@ interface MqttPublishStepSpecification<I> :
 internal class MqttPublishStepSpecificationImpl<I> : AbstractStepSpecification<I, I, MqttPublishStepSpecification<I>>(),
     MqttPublishStepSpecification<I>, NettyPluginSpecification<I, I, MqttPublishStepSpecification<I>> {
 
+    internal var monitoringConfig = StepMonitoringConfiguration()
+
     internal val mqttPublishConfiguration = MqttPublishConfiguration<I>()
 
     override fun connect(configurationBlock: MqttConnectionConfiguration.() -> Unit) {
         mqttPublishConfiguration.connectionConfiguration.configurationBlock()
     }
 
-    override fun metrics(configurationBlock: MqttPublisherMetricsConfiguration.() -> Unit) {
-        mqttPublishConfiguration.metricsConfiguration.configurationBlock()
+    override fun monitoring(monitoringConfig: StepMonitoringConfiguration.() -> Unit) {
+        this.monitoringConfig.monitoringConfig()
     }
 
     override fun clientName(clientName: String) {
@@ -86,24 +89,11 @@ internal class MqttPublishStepSpecificationImpl<I> : AbstractStepSpecification<I
 
 internal data class MqttPublishConfiguration<I>(
     internal val connectionConfiguration: MqttConnectionConfiguration = MqttConnectionConfiguration(),
-    internal val metricsConfiguration: MqttPublisherMetricsConfiguration = MqttPublisherMetricsConfiguration(),
     internal val authentication: MqttAuthentication = MqttAuthentication(),
     @field:NotNull internal var protocol: MqttVersion = MqttVersion.MQTT_3_1_1,
     @field:NotBlank internal var client: String = "",
     internal var recordsFactory: (suspend (ctx: StepContext<*, *>, input: I) -> List<MqttPublishRecord>) =
         { _, _ -> emptyList() }
-)
-
-/**
- * Configuration of the metrics to record for the MQTT publisher.
- *
- * @property recordsCount when true, records the number of published messages.
- *
- * @author Gabriel Moraes
- */
-data class MqttPublisherMetricsConfiguration(
-    var recordsCount: Boolean = false,
-    var sentBytes: Boolean = false
 )
 
 /**

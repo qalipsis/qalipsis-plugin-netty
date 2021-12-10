@@ -4,9 +4,10 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.context.StepId
-import io.qalipsis.api.lang.supplyIf
+import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
 import io.qalipsis.api.steps.StepCreationContext
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.api.steps.StepSpecificationConverter
 import io.qalipsis.api.steps.datasource.DatasourceObjectConverter
@@ -24,7 +25,8 @@ import io.qalipsis.plugins.netty.mqtt.subscriber.MqttSubscribeIterativeReader
  */
 @StepConverter
 internal class MqttSubscribeStepSpecificationConverter(
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
+    private val eventsLogger: EventsLogger
 ) : StepSpecificationConverter<MqttSubscribeStepSpecificationImpl<*>> {
 
     override fun support(stepSpecification: StepSpecification<*, *, *>): Boolean {
@@ -50,7 +52,7 @@ internal class MqttSubscribeStepSpecificationConverter(
             buildConverter(
                 stepId,
                 subscribeConfiguration.valueDeserializer,
-                subscribeConfiguration.metricsConfiguration
+                spec.monitoringConfig
             )
         )
         creationContext.createdStep(step)
@@ -68,21 +70,13 @@ internal class MqttSubscribeStepSpecificationConverter(
     private fun buildConverter(
         stepId: StepId,
         valueDeserializer: MessageDeserializer<*>,
-        metricsConfiguration: MqttSubscriberMetricsConfiguration
+        monitoringConfig: StepMonitoringConfiguration,
     ): DatasourceObjectConverter<MqttPublishMessage, out Any?> {
-
-        val consumedValueBytesCounter = supplyIf(metricsConfiguration.receivedBytes) {
-            meterRegistry.counter("mqtt-subscribe-value-bytes", "step", stepId)
-        }
-
-        val consumedRecordsCounter = supplyIf(metricsConfiguration.recordsCount) {
-            meterRegistry.counter("mqtt-subscribe-records", "step", stepId)
-        }
 
         return MqttSubscribeConverter(
             valueDeserializer,
-            consumedValueBytesCounter,
-            consumedRecordsCounter
+            meterRegistry = meterRegistry.takeIf { monitoringConfig.meters },
+            eventsLogger = eventsLogger.takeIf { monitoringConfig.events }
         )
     }
 

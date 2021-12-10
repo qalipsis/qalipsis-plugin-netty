@@ -1,9 +1,12 @@
 package io.qalipsis.plugins.netty.mqtt.publisher
 
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepId
 import io.qalipsis.api.context.StepStartStopContext
+import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
@@ -16,50 +19,82 @@ import io.qalipsis.plugins.netty.mqtt.MqttClientOptions
  *
  * @property id id of the step.
  * @property retryPolicy of the step.
- * @property metrics for the publish step.
  * @property mqttClientOptions client options to connect to the MQTT broker.
  * @property recordsFactory closure to generate the records to publish.
- *
+ * @property eventsLogger the logger for events.
+ * @property meterRegistry registry for the meters.
  * @author Gabriel Moraes
  */
 internal class MqttPublishStep<I>(
     id: StepId,
     retryPolicy: RetryPolicy?,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
-    private val metrics: MqttPublisherMetrics,
+    private val meterRegistry: MeterRegistry?,
+    private val eventsLogger: EventsLogger?,
     private val mqttClientOptions: MqttClientOptions,
     private val recordsFactory: (suspend (ctx: StepContext<*, *>, input: I) -> List<MqttPublishRecord>),
-) : AbstractStep<I, I>(id, retryPolicy) {
+) : AbstractStep<I, MqttPublishResult<I>>(id, retryPolicy) {
 
     private lateinit var mqttClient: MqttClient
 
     private lateinit var eventLoopGroup: EventLoopGroup
 
+    private val meterPrefix = "mqtt-publish"
+
+    private val eventPrefix = "mqtt.publish"
+
+    private var recordsCounter: Counter? = null
+
+    private var valueBytesCounter: Counter? = null
+
     override suspend fun start(context: StepStartStopContext) {
+        meterRegistry?.apply {
+            val tags = context.toMetersTags()
+            recordsCounter = counter("$meterPrefix-sent-records", tags)
+            valueBytesCounter = counter("$meterPrefix-sent-value-bytes", tags)
+        }
         eventLoopGroup = eventLoopGroupSupplier.getGroup()
         mqttClient = MqttClient(mqttClientOptions, eventLoopGroup)
     }
 
-    override suspend fun execute(context: StepContext<I, I>) {
+    override suspend fun execute(context: StepContext<I, MqttPublishResult<I>>) {
         val input = context.receive()
 
         val recordsToSend = recordsFactory(context, input)
+        var recordsCount = recordsToSend.size
+        var valueBytesCount = 0
 
+        eventsLogger?.debug("${eventPrefix}.sending-records", recordsToSend.size, tags = context.toEventTags())
+        recordsCounter?.increment(recordsToSend.size.toDouble())
         recordsToSend.forEach {
-
             val payload = it.value.toByteArray()
-            metrics.recordsCount?.increment()
-            metrics.sentBytes?.increment(payload.size.toDouble())
-
+            valueBytesCount += payload.size
             mqttClient.publish(it.topicName, payload, it.retainedMessage, it.qoS.mqttNativeQoS)
         }
+        eventsLogger?.info("${eventPrefix}.sending.value-bytes", valueBytesCount, tags = context.toEventTags())
+        valueBytesCounter?.increment(valueBytesCount.toDouble())
+        val mqttPublishMeters = MqttPublishMeters(
+            recordsCount = recordsCount,
+            sentBytes = valueBytesCount
+        )
 
-        context.send(input)
+        context.send(
+            MqttPublishResult(
+                input,
+                mqttPublishMeters,
+                recordsToSend
+            )
+        )
     }
 
     override suspend fun stop(context: StepStartStopContext) {
+        meterRegistry?.apply {
+            remove(recordsCounter!!)
+            remove(valueBytesCounter!!)
+            recordsCounter = null
+            valueBytesCounter = null
+        }
         mqttClient.close()
         eventLoopGroup.shutdownGracefully()
     }
-
 }

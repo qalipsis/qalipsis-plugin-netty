@@ -8,17 +8,19 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import io.aerisconsulting.catadioptre.invokeInvisible
-import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.slot
 import io.mockk.spyk
 import io.netty.handler.codec.mqtt.MqttPublishMessage
+import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageJsonDeserializer
 import io.qalipsis.api.messaging.deserializer.MessageStringDeserializer
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepCreationContextImpl
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.api.steps.datasource.DatasourceObjectConverter
 import io.qalipsis.api.steps.datasource.IterativeDatasourceStep
 import io.qalipsis.api.steps.datasource.processors.NoopDatasourceObjectProcessor
@@ -29,7 +31,6 @@ import io.qalipsis.plugins.netty.mqtt.subscriber.MqttSubscribeIterativeReader
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
-import io.qalipsis.test.mockk.verifyOnce
 import io.qalipsis.test.steps.AbstractStepSpecificationConverterTest
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions
@@ -79,7 +80,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
             spiedConverter["buildConverter"](
                 eq("my-step"),
                 refEq(spec.mqttSubscribeConfiguration.valueDeserializer),
-                refEq(spec.mqttSubscribeConfiguration.metricsConfiguration)
+                refEq(spec.monitoringConfig)
             )
         } returns recordsConverter
 
@@ -130,7 +131,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
             spiedConverter["buildConverter"](
                 capture(stepIdSlot),
                 refEq(spec.mqttSubscribeConfiguration.valueDeserializer),
-                refEq(spec.mqttSubscribeConfiguration.metricsConfiguration)
+                refEq(spec.monitoringConfig)
             )
         } returns recordsConverter
 
@@ -160,7 +161,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
     @Test
     internal fun `should build single converter`() {
 
-        val monitoringConfiguration = MqttSubscriberMetricsConfiguration()
+        val monitoringConfiguration = StepMonitoringConfiguration()
         val valueDeserializer = MessageStringDeserializer()
 
         // when
@@ -169,15 +170,15 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
             prop("valueDeserializer").isSameAs(valueDeserializer)
-            prop("consumedValueBytesCounter").isNull()
-            prop("consumedRecordsCounter").isNull()
+            prop("meterRegistry").isNull()
+            prop("eventsLogger").isNull()
         }
     }
 
     @Test
     internal fun `should build single converter with json deserializer`() {
 
-        val monitoringConfiguration = MqttSubscriberMetricsConfiguration()
+        val monitoringConfiguration = StepMonitoringConfiguration()
         val jsonValueDeserializer = MessageJsonDeserializer(String::class)
 
         // when
@@ -186,14 +187,14 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
             prop("valueDeserializer").isSameAs(jsonValueDeserializer)
-            prop("consumedValueBytesCounter").isNull()
-            prop("consumedRecordsCounter").isNull()
+            prop("meterRegistry").isNull()
+            prop("eventsLogger").isNull()
         }
     }
 
     @Test
-    internal fun `should build converter with value bytes counter`() {
-        val monitoringConfiguration = MqttSubscriberMetricsConfiguration(receivedBytes = true)
+    internal fun `should build converter with monitoring`() {
+        val monitoringConfiguration = StepMonitoringConfiguration(meters = true)
         val valueDeserializer = MessageStringDeserializer()
         // when
         val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>("buildConverter","my-step", valueDeserializer, monitoringConfiguration)
@@ -201,18 +202,15 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
             prop("valueDeserializer").isSameAs(valueDeserializer)
-            prop("consumedValueBytesCounter").isNotNull().isInstanceOf(Counter::class)
-            prop("consumedRecordsCounter").isNull()
-        }
-        verifyOnce {
-            meterRegistry.counter("mqtt-subscribe-value-bytes", "step", "my-step")
+            prop("meterRegistry").isNotNull().isInstanceOf(MeterRegistry::class)
+            prop("eventsLogger").isNull()
         }
         confirmVerified(meterRegistry)
     }
 
     @Test
-    internal fun `should build converter with records counter`() {
-        val monitoringConfiguration = MqttSubscriberMetricsConfiguration(recordsCount = true)
+    internal fun `should build converter with logger`() {
+        val monitoringConfiguration = StepMonitoringConfiguration(events = true)
         val valueDeserializer = MessageStringDeserializer()
         // when
         val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>("buildConverter","my-step", valueDeserializer, monitoringConfiguration)
@@ -220,11 +218,8 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
             prop("valueDeserializer").isSameAs(valueDeserializer)
-            prop("consumedValueBytesCounter").isNull()
-            prop("consumedRecordsCounter").isNotNull().isInstanceOf(Counter::class)
-        }
-        verifyOnce {
-            meterRegistry.counter("mqtt-subscribe-records", "step", "my-step")
+            prop("meterRegistry").isNull()
+            prop("eventsLogger").isNotNull().isInstanceOf(EventsLogger::class)
         }
         confirmVerified(meterRegistry)
     }
