@@ -1,14 +1,16 @@
 package io.qalipsis.plugins.netty.mqtt.subscriber
 
 import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
 import io.netty.buffer.ByteBufUtil
 import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.context.StepOutput
+import io.qalipsis.api.context.StepStartStopContext
+import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.lang.tryAndLogOrNull
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
 import io.qalipsis.api.steps.datasource.DatasourceObjectConverter
-import kotlinx.coroutines.channels.SendChannel
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -19,17 +21,46 @@ import java.util.concurrent.atomic.AtomicLong
  */
 internal class MqttSubscribeConverter<V>(
     private val valueDeserializer: MessageDeserializer<V>,
-    private val consumedValueBytesCounter: Counter?,
-    private val consumedRecordsCounter: Counter?
+    private val meterRegistry: MeterRegistry?,
+    private val eventsLogger: EventsLogger?
 ) : DatasourceObjectConverter<MqttPublishMessage, MqttSubscribeRecord<V>> {
+
+    private val meterPrefix = "mqtt-subscribe-consumed"
+
+    private val eventPrefix = "mqtt.subscribe.consumed"
+
+    private var recordsCounter: Counter? = null
+
+    private lateinit var context: StepStartStopContext
+
+    private var valueBytesCounter: Counter? = null
+
+    override fun start(context: StepStartStopContext) {
+        meterRegistry?.apply {
+            val tags = context.toMetersTags()
+            recordsCounter = counter("$meterPrefix-records", tags)
+            valueBytesCounter = counter("$meterPrefix-value-bytes", tags)
+        }
+        this.context = context
+    }
+    override fun stop(context: StepStartStopContext) {
+        meterRegistry?.apply {
+            remove(recordsCounter!!)
+            remove(valueBytesCounter!!)
+            recordsCounter = null
+            valueBytesCounter = null
+        }
+    }
 
     override suspend fun supply(
         offset: AtomicLong, value: MqttPublishMessage,
         output: StepOutput<MqttSubscribeRecord<V>>
     ) {
         val payload = ByteBufUtil.getBytes(value.payload())
-        consumedValueBytesCounter?.increment(payload.size.toDouble())
-        consumedRecordsCounter?.increment()
+        eventsLogger?.info("$eventPrefix.value-bytes", payload.size, tags = context.toEventTags())
+
+        valueBytesCounter?.increment(payload.size.toDouble())
+        recordsCounter?.increment()
 
         tryAndLogOrNull(log) {
             output.send(

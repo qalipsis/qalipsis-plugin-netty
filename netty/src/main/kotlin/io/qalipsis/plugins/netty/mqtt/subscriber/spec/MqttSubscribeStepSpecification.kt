@@ -8,6 +8,7 @@ import io.qalipsis.api.steps.ConfigurableStepSpecification
 import io.qalipsis.api.steps.SingletonConfiguration
 import io.qalipsis.api.steps.SingletonStepSpecification
 import io.qalipsis.api.steps.SingletonType
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.api.steps.UnicastSpecification
 import io.qalipsis.plugins.netty.NettyPluginSpecification
@@ -33,9 +34,9 @@ interface MqttSubscribeStepSpecification<V : Any> : UnicastSpecification,
     fun connect(configurationBlock: MqttConnectionConfiguration.() -> Unit)
 
     /**
-     * Configures the metrics to apply, defaults to none.
+     * Configures the monitoring of the subscribe step.
      */
-    fun metrics(configurationBlock: MqttSubscriberMetricsConfiguration.() -> Unit)
+    fun monitoring(monitoringConfig: StepMonitoringConfiguration.() -> Unit)
 
     /**
      * Defines the client name in the subscriber client.
@@ -107,6 +108,8 @@ internal class MqttSubscribeStepSpecificationImpl<V : Any>(deserializer: Message
     NettyPluginSpecification<Unit, MqttSubscribeRecord<V?>, MqttDeserializerSpecification<V>>,
     SingletonStepSpecification {
 
+    internal var monitoringConfig = StepMonitoringConfiguration()
+
     internal val mqttSubscribeConfiguration = MqttSubscribeConfiguration(valueDeserializer = deserializer)
 
     override val singletonConfiguration: SingletonConfiguration = SingletonConfiguration(SingletonType.UNICAST)
@@ -115,8 +118,8 @@ internal class MqttSubscribeStepSpecificationImpl<V : Any>(deserializer: Message
         mqttSubscribeConfiguration.connectionConfiguration.configurationBlock()
     }
 
-    override fun metrics(configurationBlock: MqttSubscriberMetricsConfiguration.() -> Unit) {
-        mqttSubscribeConfiguration.metricsConfiguration.configurationBlock()
+    override fun monitoring(monitoringConfig: StepMonitoringConfiguration.() -> Unit) {
+        this.monitoringConfig.monitoringConfig()
     }
 
     override fun clientName(clientName: String) {
@@ -177,7 +180,6 @@ internal class MqttSubscribeStepSpecificationImpl<V : Any>(deserializer: Message
 
 internal data class MqttSubscribeConfiguration<V>(
     internal val connectionConfiguration: MqttConnectionConfiguration = MqttConnectionConfiguration(),
-    internal val metricsConfiguration: MqttSubscriberMetricsConfiguration = MqttSubscriberMetricsConfiguration(),
     @field:NotBlank internal var topic: String = "",
     @field:Positive internal var concurrency: Int = 2,
     internal var subscribeQoS: MqttQoS = MqttQoS.AT_LEAST_ONCE,
@@ -186,20 +188,6 @@ internal data class MqttSubscribeConfiguration<V>(
     @field:NotBlank internal var client: String = "",
     internal var valueDeserializer: MessageDeserializer<V>,
 )
-
-/**
- * Configuration of the metrics to record for the MQTT subscriber.
- *
- * @property receivedBytes when true, records the number of bytes consumed for the serialized values.
- * @property recordsCount when true, records the number of consumed messages.
- *
- * @author Gabriel Moraes
- */
-data class MqttSubscriberMetricsConfiguration(
-    var recordsCount: Boolean = false,
-    var receivedBytes: Boolean = false
-)
-
 
 /**
  * Creates a MQTT subscriber to receive pushed data from topics of a MQTT broker and forward each message
