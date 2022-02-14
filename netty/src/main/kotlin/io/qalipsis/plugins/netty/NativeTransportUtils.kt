@@ -60,7 +60,7 @@ object NativeTransportUtils : NativeTransportProvider {
             val os = System.getProperty("os.name").lowercase()
             if (os.contains("linux")) {
                 LinuxNativeTransportProvider()
-            } else if (os.contains("mac")) {
+            } else if (os.contains("mac") && System.getProperty("os.arch") != "aarch64") {
                 MacX86NativeTransportProvider()
             } else {
                 DefaultTransportProvider()

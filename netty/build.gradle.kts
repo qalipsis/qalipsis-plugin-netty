@@ -35,7 +35,7 @@ allOpen {
     )
 }
 
-val nettyVersion = "4.1.69.Final"
+val nettyVersion = "4.1.74.Final"
 val micronautVersion: String by project
 val jacksonVersion: String by project
 val kotlinCoroutinesVersion: String by project
