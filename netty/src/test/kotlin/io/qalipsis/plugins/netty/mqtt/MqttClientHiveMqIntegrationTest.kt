@@ -1,5 +1,6 @@
 package io.qalipsis.plugins.netty.mqtt
 
+import org.junit.jupiter.api.Disabled
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
 import org.testcontainers.junit.jupiter.Container
@@ -7,6 +8,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import kotlin.math.pow
 
 @Testcontainers
+@Disabled
 internal class MqttClientHiveMqIntegrationTest: AbstractMqttClientIntegrationTest(container) {
 
     companion object {

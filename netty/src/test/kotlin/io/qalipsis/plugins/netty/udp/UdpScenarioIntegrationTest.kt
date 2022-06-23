@@ -19,7 +19,8 @@ class UdpScenarioIntegrationTest {
     @Test
     @Timeout(30)
     internal fun `should run the UDP scenario`() {
-        val exitCode = QalipsisTestRunner.withScenarios("hello-netty-udp-world").execute()
+        System.setProperty("QALIPSIS_LOGGING_LEVEL", "INFO")
+        val exitCode = QalipsisTestRunner.withScenarios("hello-netty-udp-world").withEnvironments("scenario").execute()
 
         Assertions.assertEquals(0, exitCode)
 

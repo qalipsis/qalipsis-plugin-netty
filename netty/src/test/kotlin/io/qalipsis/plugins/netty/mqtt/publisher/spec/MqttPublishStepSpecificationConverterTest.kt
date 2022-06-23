@@ -18,12 +18,13 @@ import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublishStep
 import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublishStepSpecificationConverter
 import io.qalipsis.plugins.netty.mqtt.spec.MqttVersion
 import io.qalipsis.test.assertk.prop
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.steps.AbstractStepSpecificationConverterTest
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 /**
  * @author Gabriel Moraes
@@ -32,6 +33,10 @@ import org.junit.jupiter.api.Test
 @Suppress("UNCHECKED_CAST")
 internal class MqttPublishStepSpecificationConverterTest :
     AbstractStepSpecificationConverterTest<MqttPublishStepSpecificationConverter>() {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     @RelaxedMockK
     private lateinit var mockedClientOptions: MqttClientOptions
@@ -50,7 +55,7 @@ internal class MqttPublishStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec with name and retry policy`() = runBlockingTest {
+    internal fun `should convert spec with name and retry policy`() = testDispatcherProvider.runTest {
         // given
         val spec = MqttPublishStepSpecificationImpl<Any>()
         spec.apply {
@@ -80,7 +85,7 @@ internal class MqttPublishStepSpecificationConverterTest :
         // then
         creationContext.createdStep!!.let {
             assertThat(it).isInstanceOf(MqttPublishStep::class).all {
-                prop("id").isEqualTo("my-step")
+                prop("name").isEqualTo("my-step")
                 prop("mqttClientOptions").isEqualTo(mockedClientOptions)
                 prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
                 prop("retryPolicy").isNotNull()
@@ -91,7 +96,7 @@ internal class MqttPublishStepSpecificationConverterTest :
 
 
     @Test
-    internal fun `should convert spec without name and retry policy`() = runBlockingTest {
+    internal fun `should convert spec without name and retry policy`() = testDispatcherProvider.runTest {
         // given
         val spec = MqttPublishStepSpecificationImpl<Any>()
         spec.apply {
@@ -121,7 +126,7 @@ internal class MqttPublishStepSpecificationConverterTest :
         // then
         creationContext.createdStep!!.let {
             assertThat(it).isInstanceOf(MqttPublishStep::class).all {
-                prop("id").isNotNull().isEqualTo("")
+                prop("name").isNotNull().isEqualTo("")
                 prop("mqttClientOptions").isEqualTo(mockedClientOptions)
                 prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
                 prop("retryPolicy").isNull()

@@ -16,19 +16,24 @@ import io.qalipsis.api.steps.StepCreationContextImpl
 import io.qalipsis.api.steps.StepDecorator
 import io.qalipsis.plugins.netty.tcp.spec.CloseTcpClientStepSpecification
 import io.qalipsis.test.assertk.prop
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.mockk.verifyOnce
 import io.qalipsis.test.steps.AbstractStepSpecificationConverterTest
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.coroutines.CoroutineContext
 
 @Suppress("UNCHECKED_CAST")
 internal class CloseTcpClientStepSpecificationConverterTest :
     AbstractStepSpecificationConverterTest<CloseTcpClientStepSpecificationConverter>() {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     @RelaxedMockK
     lateinit var connectionOwner: TcpClientStep<Long, ByteArray>
@@ -50,7 +55,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec without name nor retry policy to step when connection owner exists on the DAG`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val spec = CloseTcpClientStepSpecification<Int>("my-previous-tcp-step")
             val creationContext = StepCreationContextImpl(scenarioSpecification, directedAcyclicGraph, spec)
@@ -65,7 +70,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
             creationContext.createdStep!!.let {
                 assertThat(it).all {
                     isInstanceOf(CloseTcpClientStep::class)
-                    prop("id").isNotNull()
+                    prop("name").isNotNull()
                     prop("retryPolicy").isNull()
                     prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("connectionOwner").isSameAs(connectionOwner)
@@ -77,7 +82,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec without name nor retry policy to step when connection owner exists on the DAG but several times decorated`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val spec = CloseTcpClientStepSpecification<Int>("my-previous-tcp-step")
             val creationContext = StepCreationContextImpl(scenarioSpecification, directedAcyclicGraph, spec)
@@ -97,7 +102,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
             creationContext.createdStep!!.let {
                 assertThat(it).all {
                     isInstanceOf(CloseTcpClientStep::class)
-                    prop("id").isNotNull()
+                    prop("name").isNotNull()
                     prop("retryPolicy").isNull()
                     prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("connectionOwner").isSameAs(connectionOwner)
@@ -109,7 +114,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
 
 
     @Test
-    internal fun `should convert spec to step when connection owner is indirectly referenced`() = runBlockingTest {
+    internal fun `should convert spec to step when connection owner is indirectly referenced`() = testDispatcherProvider.runTest {
         // given
         val spec = CloseTcpClientStepSpecification<Int>("my-previous-kept-alive-tcp-step")
         val creationContext = StepCreationContextImpl(scenarioSpecification, directedAcyclicGraph, spec)
@@ -126,7 +131,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
         creationContext.createdStep!!.let {
             assertThat(it).all {
                 isInstanceOf(CloseTcpClientStep::class)
-                prop("id").isNotNull()
+                prop("name").isNotNull()
                 prop("retryPolicy").isNull()
                 prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                 prop("connectionOwner").isSameAs(connectionOwner)
@@ -137,7 +142,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec to step when connection owner does not exist on the DAG`() = runBlockingTest {
+    internal fun `should convert spec to step when connection owner does not exist on the DAG`() = testDispatcherProvider.runTest {
         // given
         val spec = CloseTcpClientStepSpecification<Int>("my-previous-tcp-step")
         val creationContext = StepCreationContextImpl(scenarioSpecification, directedAcyclicGraph, spec)
@@ -152,7 +157,7 @@ internal class CloseTcpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec without name nor retry policy to step when connection owner exists but is of a different type`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val spec = CloseTcpClientStepSpecification<Int>("my-previous-tcp-step")
             val creationContext = StepCreationContextImpl(scenarioSpecification, directedAcyclicGraph, spec)

@@ -2,7 +2,7 @@ package io.qalipsis.plugins.netty.socket
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.context.StepContext
-import io.qalipsis.api.context.StepId
+import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
@@ -23,7 +23,7 @@ import kotlin.coroutines.CoroutineContext
  * @author Eric Jessé
  */
 internal abstract class QuerySocketClientStep<I, O : Any, REQ : Any, RES : Any, OWNER : SocketClientStep<*, REQ, RES, *>>(
-    id: StepId,
+    id: StepName,
     retryPolicy: RetryPolicy?,
     private val ioCoroutineContext: CoroutineContext,
     val connectionOwner: OWNER,

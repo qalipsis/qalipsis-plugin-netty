@@ -59,7 +59,7 @@ internal class UdpClientStepIntegrationTest {
 
         step.execute(ctx)
 
-        val result = (ctx.output as Channel).receive()
+        val result = (ctx.output as Channel).receive().value
         step.stop(relaxedMockk())
 
         verifyOnce { workerGroup.shutdownGracefully() }

@@ -148,7 +148,7 @@ internal class SimpleTcpClientStepTest {
     }
 
     @Test
-    fun `should execute the request from the step context`() = runBlocking {
+    fun `should execute the request from the step context`() = testDispatcherProvider.run {
         // given
         val request = ByteArray(0)
         val response = ByteArray(0)
@@ -270,7 +270,7 @@ internal class SimpleTcpClientStepTest {
         }
 
     @Test
-    fun `should throws an exception and close the client when executing returns an exception`() = runBlocking {
+    fun `should throws an exception and close the client when executing returns an exception`() = testDispatcherProvider.run {
         val request = ByteArray(0)
         val monitoringCollector = relaxedMockk<StepContextBasedSocketMonitoringCollector>()
         val input = RandomStringUtils.randomAlphanumeric(10)

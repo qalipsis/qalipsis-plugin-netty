@@ -65,7 +65,7 @@ internal class MqttPublishScenarioIntegrationTest {
 
         client.publish(topicName, "10".toByteArray(), qoS = MqttQoS.EXACTLY_ONCE)
 
-        val exitCode = QalipsisTestRunner.withScenarios("publisher-mqtt").execute()
+        val exitCode = QalipsisTestRunner.withScenarios("publisher-mqtt").withEnvironments("scenario").execute()
 
         Assertions.assertEquals(0, exitCode)
 

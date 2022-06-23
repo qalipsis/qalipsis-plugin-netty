@@ -25,20 +25,25 @@ import io.qalipsis.plugins.netty.http.response.ResponseConverter
 import io.qalipsis.plugins.netty.http.spec.HttpClientStepSpecificationImpl
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.assertk.typedProp
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.steps.AbstractStepSpecificationConverterTest
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.coroutines.CoroutineContext
 
 @WithMockk
 @Suppress("UNCHECKED_CAST")
 internal class HttpClientStepSpecificationConverterTest :
     AbstractStepSpecificationConverterTest<HttpClientStepSpecificationConverter>() {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     @RelaxedMockK
     private lateinit var eventLoopGroupSupplier: EventLoopGroupSupplier
@@ -74,7 +79,7 @@ internal class HttpClientStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec with name and retry policy to step`() = runBlockingTest {
+    internal fun `should convert spec with name and retry policy to step`() = testDispatcherProvider.runTest {
         // given
         val requestSpecification: suspend (StepContext<*, *>, String) -> HttpRequest<*> =
             { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
@@ -95,7 +100,7 @@ internal class HttpClientStepSpecificationConverterTest :
 
         // then
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(SimpleHttpClientStep::class).all {
-            prop(SimpleHttpClientStep<*, *>::id).isEqualTo("my-step")
+            prop(SimpleHttpClientStep<*, *>::name).isEqualTo("my-step")
             prop(SimpleHttpClientStep<*, *>::retryPolicy).isSameAs(mockedRetryPolicy)
             prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
             prop("ioCoroutineScope").isSameAs(ioCoroutineScope)
@@ -115,7 +120,7 @@ internal class HttpClientStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec without name nor retry policy to step`() = runBlockingTest {
+    internal fun `should convert spec without name nor retry policy to step`() = testDispatcherProvider.runTest {
         // given
         val requestSpecification: suspend (StepContext<*, *>, String) -> HttpRequest<*> =
             { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
@@ -133,7 +138,7 @@ internal class HttpClientStepSpecificationConverterTest :
 
         // then
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(SimpleHttpClientStep::class).all {
-            prop(SimpleHttpClientStep<*, *>::id).isNotNull()
+            prop(SimpleHttpClientStep<*, *>::name).isNotNull()
             prop(SimpleHttpClientStep<*, *>::retryPolicy).isNull()
             prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
             prop("ioCoroutineScope").isSameAs(ioCoroutineScope)
@@ -153,7 +158,7 @@ internal class HttpClientStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec with name and pool configuration`() = runBlockingTest {
+    internal fun `should convert spec with name and pool configuration`() = testDispatcherProvider.runTest {
         // given
         val requestSpecification: suspend (StepContext<*, *>, String) -> HttpRequest<*> =
             { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
@@ -178,7 +183,7 @@ internal class HttpClientStepSpecificationConverterTest :
 
         // then
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(PooledHttpClientStep::class).all {
-            prop(PooledHttpClientStep<*, *>::id).isEqualTo("my-step")
+            prop(PooledHttpClientStep<*, *>::name).isEqualTo("my-step")
             prop(PooledHttpClientStep<*, *>::retryPolicy).isSameAs(mockedRetryPolicy)
             prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
             prop("ioCoroutineScope").isSameAs(ioCoroutineScope)

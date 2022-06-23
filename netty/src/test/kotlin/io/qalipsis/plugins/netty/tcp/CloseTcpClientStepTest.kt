@@ -32,7 +32,7 @@ internal class CloseTcpClientStepTest {
 
             step.execute(ctx)
 
-            val output = (ctx.output as Channel).receive()
+            val output = (ctx.output as Channel).receive().value
             Assertions.assertEquals("This is a test", output)
             coVerifyOnce {
                 simpleTcpClientStep.close(refEq(ctx))
@@ -64,7 +64,7 @@ internal class CloseTcpClientStepTest {
 
             step.execute(ctx)
 
-            val output = (ctx.output as Channel).receive()
+            val output = (ctx.output as Channel).receive().value
             Assertions.assertEquals("This is a test", output)
             coVerifyNever {
                 simpleTcpClientStep.close(refEq(ctx))
@@ -97,7 +97,7 @@ internal class CloseTcpClientStepTest {
 
         step.execute(ctx)
 
-        val output = (ctx.output as Channel).receive()
+        val output = (ctx.output as Channel).receive().value
         Assertions.assertEquals("This is a test", output)
         coVerifyOnce {
             simpleTcpClientStep.close(refEq(ctx))
@@ -115,7 +115,7 @@ internal class CloseTcpClientStepTest {
 
             step.execute(ctx)
 
-            val output = (ctx.output as Channel).receive()
+            val output = (ctx.output as Channel).receive().value
             Assertions.assertEquals("This is a test", output)
             coVerifyOnce {
                 simpleTcpClientStep.close(refEq(ctx))
@@ -133,7 +133,7 @@ internal class CloseTcpClientStepTest {
 
             step.execute(ctx)
 
-            val output = (ctx.output as Channel).receive()
+            val output = (ctx.output as Channel).receive().value
             Assertions.assertEquals("This is a test", output)
             coVerifyNever {
                 simpleTcpClientStep.close(refEq(ctx))
@@ -152,7 +152,7 @@ internal class CloseTcpClientStepTest {
 
             step.execute(ctx)
 
-            val output = (ctx.output as Channel).receive()
+            val output = (ctx.output as Channel).receive().value
             Assertions.assertEquals("This is a test", output)
             coVerifyOnce {
                 simpleTcpClientStep.close(refEq(ctx))

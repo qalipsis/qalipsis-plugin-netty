@@ -46,7 +46,8 @@ class Http1ScenarioIntegrationTest {
     @Test
     @Timeout(30)
     internal fun `should run the HTTP scenario`() {
-        val exitCode = QalipsisTestRunner.withScenarios("hello-netty-simple-http1-world").execute()
+        val exitCode = QalipsisTestRunner.withScenarios("hello-netty-simple-http1-world")
+            .withEnvironments("scenario").execute()
 
         Assertions.assertEquals(0, exitCode)
 
@@ -63,7 +64,8 @@ class Http1ScenarioIntegrationTest {
     @Test
     @Timeout(30)
     internal fun `should run the HTTP scenario with pooling`() {
-        val exitCode = QalipsisTestRunner.withScenarios("hello-netty-pooled-http1-world").execute()
+        val exitCode =
+            QalipsisTestRunner.withScenarios("hello-netty-pooled-http1-world").withEnvironments("scenario").execute()
 
         Assertions.assertEquals(0, exitCode)
 

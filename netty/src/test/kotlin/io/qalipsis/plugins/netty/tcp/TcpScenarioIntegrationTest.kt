@@ -27,7 +27,8 @@ class TcpScenarioIntegrationTest {
     @Test
     @Timeout(30)
     internal fun `should run the TCP scenario`() {
-        val exitCode = QalipsisTestRunner.withScenarios("hello-netty-simple-tcp-world").execute()
+        val exitCode =
+            QalipsisTestRunner.withScenarios("hello-netty-simple-tcp-world").withEnvironments("scenario").execute()
 
         Assertions.assertEquals(0, exitCode)
 
@@ -42,7 +43,8 @@ class TcpScenarioIntegrationTest {
     @Test
     @Timeout(30)
     internal fun `should run the TCP scenario with pooling`() {
-        val exitCode = QalipsisTestRunner.withScenarios("hello-netty-pooled-tcp-world").execute()
+        val exitCode =
+            QalipsisTestRunner.withScenarios("hello-netty-pooled-tcp-world").withEnvironments("scenario").execute()
 
         Assertions.assertEquals(0, exitCode)
 

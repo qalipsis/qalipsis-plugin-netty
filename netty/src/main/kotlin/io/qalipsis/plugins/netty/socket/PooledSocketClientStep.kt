@@ -3,7 +3,7 @@ package io.qalipsis.plugins.netty.socket
 import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.StepContext
-import io.qalipsis.api.context.StepId
+import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.pool.FixedPool
@@ -31,7 +31,7 @@ import kotlin.coroutines.CoroutineContext
  * @author Eric Jessé
  */
 internal abstract class PooledSocketClientStep<I, O, CONF : SocketClientConfiguration, REQ : Any, RES : Any, CLI : SocketClient<CONF, REQ, RES, CLI>>(
-    id: StepId,
+    id: StepName,
     retryPolicy: RetryPolicy?,
     private val ioCoroutineContext: CoroutineContext,
     private val requestFactory: suspend (StepContext<*, *>, I) -> REQ,

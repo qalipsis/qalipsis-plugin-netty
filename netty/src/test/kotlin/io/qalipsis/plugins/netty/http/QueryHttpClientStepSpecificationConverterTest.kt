@@ -26,20 +26,25 @@ import io.qalipsis.plugins.netty.http.response.ResponseConverter
 import io.qalipsis.plugins.netty.http.spec.QueryHttpClientStepSpecification
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.assertk.typedProp
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.mockk.verifyOnce
 import io.qalipsis.test.steps.AbstractStepSpecificationConverterTest
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.coroutines.CoroutineContext
 
 @WithMockk
 @Suppress("UNCHECKED_CAST")
 internal class QueryHttpClientStepSpecificationConverterTest :
     AbstractStepSpecificationConverterTest<QueryHttpClientStepSpecificationConverter>() {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     @RelaxedMockK
     private lateinit var ioCoroutineContext: CoroutineContext
@@ -73,7 +78,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec with name and retry policy to step when connection owner exists on the DAG`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
@@ -100,7 +105,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
             creationContext.createdStep!!.let {
                 assertThat(it).all {
                     isInstanceOf(QueryHttpClientStep::class)
-                    prop("id").isEqualTo("my-step")
+                    prop("name").isEqualTo("my-step")
                     prop("retryPolicy").isSameAs(mockedRetryPolicy)
                     prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
@@ -120,7 +125,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec without name nor retry policy to step when connection owner exists on the DAG`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
@@ -145,7 +150,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
             creationContext.createdStep!!.let {
                 assertThat(it).all {
                     isInstanceOf(QueryHttpClientStep::class)
-                    prop("id").isNotNull()
+                    prop("name").isNotNull()
                     prop("retryPolicy").isNull()
                     prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
@@ -167,7 +172,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec without name nor retry policy to step when connection owner is indirectly referenced`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
@@ -195,7 +200,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
             creationContext.createdStep!!.let {
                 assertThat(it).all {
                     isInstanceOf(QueryHttpClientStep::class)
-                    prop("id").isNotNull()
+                    prop("name").isNotNull()
                     prop("retryPolicy").isNull()
                     prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
@@ -217,7 +222,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec without name nor retry policy to step when connection owner does not exist on the DAG`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
@@ -238,7 +243,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
     @Test
     internal fun `should convert spec without name nor retry policy to step when connection owner exists but is of a different type`() =
-        runBlockingTest {
+        testDispatcherProvider.runTest {
             // given
             val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }

@@ -3,7 +3,7 @@ package io.qalipsis.plugins.netty.http
 import io.micrometer.core.instrument.MeterRegistry
 import io.netty.handler.codec.http.HttpResponse
 import io.qalipsis.api.context.StepContext
-import io.qalipsis.api.context.StepId
+import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.plugins.netty.RequestResult
@@ -21,7 +21,7 @@ import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpRespo
  * @author Eric Jessé
  */
 internal class QueryHttpClientStep<I, O>(
-    id: StepId,
+    id: StepName,
     retryPolicy: RetryPolicy?,
     ioCoroutineContext: CoroutineContext,
     connectionOwner: HttpClientStep<*, *>,

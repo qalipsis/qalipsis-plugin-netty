@@ -12,7 +12,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.slot
 import io.mockk.spyk
 import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.events.EventsLogger
@@ -29,12 +28,13 @@ import io.qalipsis.plugins.netty.mqtt.spec.MqttQoS
 import io.qalipsis.plugins.netty.mqtt.subscriber.MqttSubscribeConverter
 import io.qalipsis.plugins.netty.mqtt.subscriber.MqttSubscribeIterativeReader
 import io.qalipsis.test.assertk.prop
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.steps.AbstractStepSpecificationConverterTest
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 
 /**
@@ -44,6 +44,10 @@ import org.junit.jupiter.api.Test
 @WithMockk
 internal class MqttSubscribeStepSpecificationConverterTest :
     AbstractStepSpecificationConverterTest<MqttSubscribeStepSpecificationConverter>() {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     @RelaxedMockK
     private lateinit var mockedClientOptions: MqttClientOptions
@@ -59,7 +63,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec with name and topic`() = runBlockingTest {
+    internal fun `should convert spec with name and topic`() = testDispatcherProvider.runTest {
         // given
         val deserializer = MessageStringDeserializer()
         val spec = MqttSubscribeStepSpecificationImpl(deserializer)
@@ -78,7 +82,6 @@ internal class MqttSubscribeStepSpecificationConverterTest :
 
         every {
             spiedConverter["buildConverter"](
-                eq("my-step"),
                 refEq(spec.mqttSubscribeConfiguration.valueDeserializer),
                 refEq(spec.monitoringConfig)
             )
@@ -94,7 +97,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         // then
         creationContext.createdStep!!.let {
             assertThat(it).isInstanceOf(IterativeDatasourceStep::class).all {
-                prop("id").isEqualTo("my-step")
+                prop("name").isEqualTo("my-step")
                 prop("reader").isNotNull().isInstanceOf(MqttSubscribeIterativeReader::class).all {
                     prop("subscribeQoS").isEqualTo(MqttQoS.AT_LEAST_ONCE)
                     prop("concurrency").isEqualTo(2)
@@ -108,7 +111,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec without name but with topic`() = runBlockingTest {
+    internal fun `should convert spec without name but with topic`() = testDispatcherProvider.runTest {
 
         // given
         val deserializer = MessageStringDeserializer()
@@ -124,12 +127,9 @@ internal class MqttSubscribeStepSpecificationConverterTest :
 
         val spiedConverter = spyk(converter)
         val recordsConverter: DatasourceObjectConverter<MqttPublishMessage, out Any?> = relaxedMockk()
-        val stepIdSlot = slot<String>()
-
 
         every {
             spiedConverter["buildConverter"](
-                capture(stepIdSlot),
                 refEq(spec.mqttSubscribeConfiguration.valueDeserializer),
                 refEq(spec.monitoringConfig)
             )
@@ -145,7 +145,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         // then
         creationContext.createdStep!!.let {
             assertThat(it).isInstanceOf(IterativeDatasourceStep::class).all {
-                prop("id").isNotNull().isEqualTo(stepIdSlot.captured)
+                prop("name").isNotNull()
                 prop("reader").isNotNull().isInstanceOf(MqttSubscribeIterativeReader::class).all {
                     prop("subscribeQoS").isEqualTo(MqttQoS.AT_LEAST_ONCE)
                     prop("concurrency").isEqualTo(2)
@@ -165,7 +165,11 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         val valueDeserializer = MessageStringDeserializer()
 
         // when
-        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>("buildConverter","my-step", valueDeserializer, monitoringConfiguration)
+        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>(
+            "buildConverter",
+            valueDeserializer,
+            monitoringConfiguration
+        )
 
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
@@ -182,7 +186,11 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         val jsonValueDeserializer = MessageJsonDeserializer(String::class)
 
         // when
-        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>("buildConverter","my-step", jsonValueDeserializer, monitoringConfiguration)
+        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>(
+            "buildConverter",
+            jsonValueDeserializer,
+            monitoringConfiguration
+        )
 
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
@@ -197,7 +205,11 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         val monitoringConfiguration = StepMonitoringConfiguration(meters = true)
         val valueDeserializer = MessageStringDeserializer()
         // when
-        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>("buildConverter","my-step", valueDeserializer, monitoringConfiguration)
+        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>(
+            "buildConverter",
+            valueDeserializer,
+            monitoringConfiguration
+        )
 
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
@@ -213,7 +225,11 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         val monitoringConfiguration = StepMonitoringConfiguration(events = true)
         val valueDeserializer = MessageStringDeserializer()
         // when
-        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>("buildConverter","my-step", valueDeserializer, monitoringConfiguration)
+        val recordsConverter = converter.invokeInvisible<DatasourceObjectConverter<MqttPublishMessage, out Any?>>(
+            "buildConverter",
+            valueDeserializer,
+            monitoringConfiguration
+        )
 
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {

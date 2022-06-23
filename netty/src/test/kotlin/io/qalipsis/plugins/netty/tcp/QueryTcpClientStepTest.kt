@@ -14,6 +14,7 @@ import io.mockk.coVerify
 import io.mockk.confirmVerified
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.slot
+import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
@@ -78,7 +79,7 @@ internal class QueryTcpClientStepTest {
 
         step.execute(ctx)
 
-        val result = (ctx.output as Channel<RequestResult<String, ByteArray, *>>).receive()
+        val result = (ctx.output as Channel<StepContext.StepOutputRecord<RequestResult<String, ByteArray, *>>>).receive().value
         assertThat(result).all {
             prop(RequestResult<String, ByteArray, *>::input).isEqualTo("This is a test")
             prop(RequestResult<String, ByteArray, *>::isSuccess).isTrue()

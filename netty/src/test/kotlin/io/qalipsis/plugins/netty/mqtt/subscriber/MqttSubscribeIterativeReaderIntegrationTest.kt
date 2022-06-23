@@ -16,13 +16,14 @@ import io.qalipsis.plugins.netty.mqtt.spec.MqttAuthentication
 import io.qalipsis.plugins.netty.mqtt.spec.MqttConnectionConfiguration
 import io.qalipsis.plugins.netty.mqtt.spec.MqttQoS
 import io.qalipsis.plugins.netty.mqtt.spec.MqttVersion
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.relaxedMockk
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
 import org.testcontainers.junit.jupiter.Container
@@ -31,6 +32,10 @@ import kotlin.math.pow
 
 @Testcontainers
 internal class MqttSubscribeIterativeReaderIntegrationTest {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     private lateinit var reader: MqttSubscribeIterativeReader
 
@@ -44,7 +49,7 @@ internal class MqttSubscribeIterativeReaderIntegrationTest {
 
     @Test
     @Timeout(10)
-    internal fun `should always have next at start but not at stop`() = runBlocking {
+    internal fun `should always have next at start but not at stop`() = testDispatcherProvider.run {
         val clientOptions = MqttClientOptions(
             connectionConfiguration = connectionConfiguration,
             authentication = MqttAuthentication(),
@@ -63,7 +68,7 @@ internal class MqttSubscribeIterativeReaderIntegrationTest {
 
     @Test
     @Timeout(10)
-    internal fun `should accept start after stop and consume`() = runBlocking {
+    internal fun `should accept start after stop and consume`() = testDispatcherProvider.run {
 
         val clientOptions = MqttClientOptions(
             connectionConfiguration = connectionConfiguration,
