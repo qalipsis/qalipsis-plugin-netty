@@ -90,7 +90,7 @@ internal class QueryHttpClientStepTest {
 
         step.execute(ctx)
 
-        val result = (ctx.output as Channel<RequestResult<String, HttpResponse, *>>).receive()
+        val result = (ctx.output as Channel<StepContext.StepOutputRecord<RequestResult<String, HttpResponse, *>>>).receive().value
         assertThat(result).all {
             prop(RequestResult<String, HttpResponse, *>::input).isEqualTo("This is a test")
             prop(RequestResult<String, HttpResponse, *>::isSuccess).isTrue()

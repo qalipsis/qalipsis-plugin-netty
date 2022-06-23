@@ -218,7 +218,7 @@ internal class PooledHttpClientStepTest {
 
         // when
         step.execute(ctx)
-        val result = (ctx.output as Channel<RequestResult<String, HttpResponse, *>>).receive()
+        val result = (ctx.output as Channel<StepContext.StepOutputRecord<RequestResult<String, HttpResponse, *>>>).receive().value
 
         // then
         assertThat(result).all {

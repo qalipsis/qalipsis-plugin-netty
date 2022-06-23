@@ -87,7 +87,7 @@ internal class MqttSubscribeStepSpecificationImplTest {
             }
             protocol(MqttVersion.MQTT_5)
             clientName("name")
-            forwardOnce(6, Duration.ofDays(1))
+            unicast(6, Duration.ofDays(1))
         }.deserialize(MessageStringDeserializer::class)
 
         assertThat(scenario.rootSteps.first()).isInstanceOf(MqttSubscribeStepSpecificationImpl::class).all {
@@ -144,7 +144,7 @@ internal class MqttSubscribeStepSpecificationImplTest {
             }
             protocol(MqttVersion.MQTT_5)
             clientName("name")
-            forwardOnce(6, Duration.ofDays(1))
+            unicast(6, Duration.ofDays(1))
         }.deserialize(MessageStringDeserializer::class)
 
         assertThat(scenario.rootSteps.first()).isInstanceOf(MqttSubscribeStepSpecificationImpl::class).all {

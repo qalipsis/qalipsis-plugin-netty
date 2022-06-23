@@ -10,17 +10,22 @@ import io.qalipsis.api.steps.StepCreationContextImpl
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.tcp.spec.TcpClientStepSpecificationImpl
 import io.qalipsis.test.assertk.prop
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.steps.AbstractStepSpecificationConverterTest
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.coroutines.CoroutineContext
 
 @Suppress("UNCHECKED_CAST")
 internal class TcpClientStepSpecificationConverterTest :
     AbstractStepSpecificationConverterTest<TcpClientStepSpecificationConverter>() {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     @RelaxedMockK
     private lateinit var eventLoopGroupSupplier: EventLoopGroupSupplier
@@ -41,7 +46,7 @@ internal class TcpClientStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec with name and retry policy to step`() = runBlockingTest {
+    internal fun `should convert spec with name and retry policy to step`() = testDispatcherProvider.runTest {
         // given
         val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
             { _, _ -> ByteArray(1) { it.toByte() } }
@@ -62,7 +67,7 @@ internal class TcpClientStepSpecificationConverterTest :
 
         // then
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(SimpleTcpClientStep::class).all {
-            prop(SimpleTcpClientStep<*>::id).isEqualTo("my-step")
+            prop(SimpleTcpClientStep<*>::name).isEqualTo("my-step")
             prop(SimpleTcpClientStep<*>::retryPolicy).isSameAs(mockedRetryPolicy)
             prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
             prop("requestFactory").isSameAs(requestSpecification)
@@ -74,7 +79,7 @@ internal class TcpClientStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec without name nor retry policy to step`() = runBlockingTest {
+    internal fun `should convert spec without name nor retry policy to step`() = testDispatcherProvider.runTest {
         // given
         val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
             { _, _ -> ByteArray(1) { it.toByte() } }
@@ -92,7 +97,7 @@ internal class TcpClientStepSpecificationConverterTest :
 
         // then
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(SimpleTcpClientStep::class).all {
-            prop(SimpleTcpClientStep<*>::id).isNotNull()
+            prop(SimpleTcpClientStep<*>::name).isNotNull()
             prop(SimpleTcpClientStep<*>::retryPolicy).isNull()
             prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
             prop("requestFactory").isSameAs(requestSpecification)
@@ -104,7 +109,7 @@ internal class TcpClientStepSpecificationConverterTest :
     }
 
     @Test
-    internal fun `should convert spec with name and pool configuration`() = runBlockingTest {
+    internal fun `should convert spec with name and pool configuration`() = testDispatcherProvider.runTest {
         // given
         val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
             { _, _ -> ByteArray(1) { it.toByte() } }
@@ -129,7 +134,7 @@ internal class TcpClientStepSpecificationConverterTest :
 
         // then
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(PooledTcpClientStep::class).all {
-            prop(PooledTcpClientStep<*>::id).isEqualTo("my-step")
+            prop(PooledTcpClientStep<*>::name).isEqualTo("my-step")
             prop(PooledTcpClientStep<*>::retryPolicy).isSameAs(mockedRetryPolicy)
             prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
             prop("requestFactory").isSameAs(requestSpecification)

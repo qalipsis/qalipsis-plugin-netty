@@ -1,0 +1,7 @@
+logging:
+  level:
+    root: INFO
+    "io.qalipsis": INFO
+    "io.qalipsis.api": INFO
+    "io.qalipsis.core": INFO
+    "io.qalipsis.core.runtime": INFO

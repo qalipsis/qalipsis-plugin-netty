@@ -3,7 +3,6 @@ package io.qalipsis.plugins.netty.mqtt.subscriber.spec
 import io.micrometer.core.instrument.MeterRegistry
 import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.annotations.StepConverter
-import io.qalipsis.api.context.StepId
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
 import io.qalipsis.api.steps.StepCreationContext
@@ -50,7 +49,6 @@ internal class MqttSubscribeStepSpecificationConverter(
             reader,
             NoopDatasourceObjectProcessor(),
             buildConverter(
-                stepId,
                 subscribeConfiguration.valueDeserializer,
                 spec.monitoringConfig
             )
@@ -68,7 +66,6 @@ internal class MqttSubscribeStepSpecificationConverter(
     }
 
     private fun buildConverter(
-        stepId: StepId,
         valueDeserializer: MessageDeserializer<*>,
         monitoringConfig: StepMonitoringConfiguration,
     ): DatasourceObjectConverter<MqttPublishMessage, out Any?> {

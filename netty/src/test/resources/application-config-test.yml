@@ -5,6 +5,10 @@ logging:
   console: true
   root: info
   level:
+    "io.qalipsis": INFO
+    "io.qalipsis.api": INFO
+    "io.qalipsis.core": INFO
+    "io.qalipsis.core.runtime": INFO
     "io.qalipsis.plugins.netty": INFO
     #"io.qalipsis.plugins.netty.http": TRACE
 

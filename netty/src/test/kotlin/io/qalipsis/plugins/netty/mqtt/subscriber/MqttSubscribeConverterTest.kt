@@ -25,13 +25,14 @@ import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
 import io.qalipsis.plugins.netty.mqtt.spec.MqttQoS
 import io.qalipsis.test.assertk.prop
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.CleanMockkRecordedCalls
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.mockk.verifyExactly
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -39,6 +40,10 @@ import java.util.concurrent.atomic.AtomicLong
  */
 @CleanMockkRecordedCalls
 internal class MqttSubscribeConverterTest{
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     private val valueSerializer: MessageDeserializer<String> = relaxedMockk {
         every { deserialize(any()) } answers { firstArg<ByteArray>().decodeToString() }
@@ -52,7 +57,7 @@ internal class MqttSubscribeConverterTest{
 
     @Test
     @Timeout(2)
-    fun `should deserialize without monitoring`() = runBlockingTest {
+    fun `should deserialize without monitoring`() = testDispatcherProvider.runTest {
         executeConversion(enableMonitoring = false)
 
         confirmVerified(recordsCounter, valueBytesCounter, valueSerializer)
@@ -60,7 +65,7 @@ internal class MqttSubscribeConverterTest{
 
     @Test
     @Timeout(2)
-    fun `should deserialize and count the values bytes`() = runBlockingTest {
+    fun `should deserialize and count the values bytes`() = testDispatcherProvider.runTest {
         executeConversion(consumedValueBytesCounter = valueBytesCounter, enableMonitoring = true)
 
         verify {
@@ -74,7 +79,7 @@ internal class MqttSubscribeConverterTest{
 
     @Test
     @Timeout(2)
-    fun `should deserialize and count the records`() = runBlockingTest {
+    fun `should deserialize and count the records`() = testDispatcherProvider.runTest {
         executeConversion(consumedRecordsCounter = recordsCounter, enableMonitoring = true)
 
         verifyExactly(3) {

@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
-import io.qalipsis.api.context.StepId
+import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.lang.tryAndLogOrNull
@@ -36,7 +36,7 @@ import kotlin.coroutines.CoroutineContext
  * @author Eric Jessé
  */
 internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientConfiguration, REQ : Any, RES : Any, CLI : SocketClient<CONF, REQ, RES, CLI>>(
-    id: StepId,
+    id: StepName,
     retryPolicy: RetryPolicy?,
     private val ioCoroutineContext: CoroutineContext,
     private val requestFactory: suspend (StepContext<*, *>, I) -> REQ,
@@ -118,7 +118,7 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         monitoringCollector: StepContextBasedSocketMonitoringCollector,
         context: StepContext<*, *>, input: IN, request: REQ
     ): RES {
-        require(running) { "The step $id is not running" }
+        require(running) { "The step $name is not running" }
 
         val client = try {
             minionsSemaphores.computeIfAbsent(context.minionId) { Semaphore(1, 0) }.withPermit {

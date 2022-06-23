@@ -146,7 +146,7 @@ internal class MqttSubscribeStepSpecificationImpl<V : Any>(deserializer: Message
         mqttSubscribeConfiguration.concurrency = concurrency
     }
 
-    override fun forwardOnce(bufferSize: Int, idleTimeout: Duration) {
+    override fun unicast(bufferSize: Int, idleTimeout: Duration) {
         singletonConfiguration.bufferSize = bufferSize
         singletonConfiguration.idleTimeout = idleTimeout
     }

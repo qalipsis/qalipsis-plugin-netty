@@ -6,24 +6,29 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tags
 import io.mockk.coEvery
 import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
-import io.mockk.every
-import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.context.StepContext
-import io.qalipsis.api.context.StepId
+import io.qalipsis.api.context.StepName
+import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.mqtt.MqttClient
 import io.qalipsis.plugins.netty.mqtt.MqttClientOptions
+import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.steps.StepTestHelper
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 @WithMockk
 internal class MqttPublishStepTest {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
 
     private var recordsFactory: (suspend (ctx: StepContext<*, *>, input: Any) -> List<MqttPublishRecord>) =
         relaxedMockk { }
@@ -37,11 +42,11 @@ internal class MqttPublishStepTest {
     private val eventsLogger = relaxedMockk<EventsLogger>()
 
     @Test
-    fun `should publish without recording metrics`() = runBlockingTest {
+    fun `should publish without recording metrics`() = testDispatcherProvider.runTest {
         coEvery { recordsFactory.invoke(any(), any()) } returns listOf(MqttPublishRecord("payload", "test"))
 
         val mqttPublishStep =
-            MqttPublishStep(StepId(), null, workerGroupSupplier, null, eventsLogger, clientOptions, recordsFactory)
+            MqttPublishStep(StepName(), null, workerGroupSupplier, null, eventsLogger, clientOptions, recordsFactory)
         mqttPublishStep.setProperty("mqttClient", relaxedMockk<MqttClient> { })
 
         val context = StepTestHelper.createStepContext<Any, MqttPublishResult<Any>>(input = "Any")
@@ -49,7 +54,7 @@ internal class MqttPublishStepTest {
     }
 
     @Test
-    fun `should publish recording metrics`() = runBlockingTest {
+    fun `should publish recording metrics`() = testDispatcherProvider.runTest {
         coEvery { recordsFactory.invoke(any(), any()) } returns listOf(MqttPublishRecord("payload", "test"))
         val recordsCountMock = relaxedMockk<Counter> { }
         val sentBytesMock = relaxedMockk<Counter> { }
@@ -63,7 +68,15 @@ internal class MqttPublishStepTest {
             every { toMetersTags() } returns metersTags
         }
         val mqttPublishStep =
-            MqttPublishStep(StepId(), null, workerGroupSupplier, meterRegistry, eventsLogger, clientOptions, recordsFactory)
+            MqttPublishStep(
+                StepName(),
+                null,
+                workerGroupSupplier,
+                meterRegistry,
+                eventsLogger,
+                clientOptions,
+                recordsFactory
+            )
         mqttPublishStep.setProperty("mqttClient", relaxedMockk<MqttClient> { })
 
         val context = StepTestHelper.createStepContext<Any, MqttPublishResult<Any>>(input = "Any")

@@ -1,7 +1,7 @@
 package io.qalipsis.plugins.netty.socket
 
 import io.qalipsis.api.context.StepContext
-import io.qalipsis.api.context.StepId
+import io.qalipsis.api.context.StepName
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.api.steps.ErrorProcessingStep
@@ -14,7 +14,7 @@ import kotlin.coroutines.CoroutineContext
  * @author Eric Jessé
  */
 internal abstract class CloseSocketClientStep<I>(
-    id: StepId,
+    id: StepName,
     private val ioCoroutineContext: CoroutineContext,
     private val connectionOwner: SocketClientStep<*, *, *, *>
 ) : AbstractStep<I, I>(id, null), ErrorProcessingStep<I, I> {

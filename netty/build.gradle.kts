@@ -18,9 +18,10 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<Test> {
-    // Enables the search of memory leaks in the Netty buffers when running all tests.
-    systemProperties("io.netty.leakDetectionLevel" to "paranoid")
     jvmArgs("-XX:-MaxFDLimit")
+    // Enables the search of memory leaks in the Netty buffers when running all tests.
+    // Enable only for local execution, not for CI.
+    // systemProperties("io.netty.leakDetectionLevel" to "paranoid")
 }
 
 allOpen {
@@ -108,6 +109,8 @@ dependencies {
     testImplementation("org.apache.commons:commons-lang3:3.12.0")
     testImplementation("io.aeris-consulting:catadioptre-kotlin:${catadioptreVersion}")
     testRuntimeOnly("io.qalipsis:runtime:${project.version}")
+    testRuntimeOnly("io.qalipsis:head:${project.version}")
+    testRuntimeOnly("io.qalipsis:factory:${project.version}")
 
     kaptTest(platform("io.micronaut:micronaut-bom:$micronautVersion"))
     kaptTest("io.micronaut:micronaut-inject-java")

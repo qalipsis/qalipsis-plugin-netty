@@ -8,7 +8,7 @@ import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.util.ReferenceCounted
 import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
-import io.qalipsis.api.context.StepId
+import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.retry.RetryPolicy
@@ -33,7 +33,7 @@ import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpRespo
  * @author Eric Jessé
  */
 internal class SimpleHttpClientStep<I, O>(
-    id: StepId,
+    id: StepName,
     retryPolicy: RetryPolicy?,
     private val ioCoroutineScope: CoroutineScope,
     private val ioCoroutineContext: CoroutineContext,

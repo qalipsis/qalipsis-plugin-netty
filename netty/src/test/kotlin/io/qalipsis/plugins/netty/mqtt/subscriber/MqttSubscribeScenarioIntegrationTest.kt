@@ -67,7 +67,9 @@ internal class MqttSubscribeScenarioIntegrationTest {
         val topicName = "test"
         client.publish(topicName, "10".toByteArray())
 
-        val exitCode = QalipsisTestRunner.withScenarios("subscriber-mqtt-string-deserializer").execute()
+        val exitCode =
+            QalipsisTestRunner.withScenarios("subscriber-mqtt-string-deserializer").withEnvironments("scenario")
+                .execute()
 
         Assertions.assertEquals(0, exitCode)
         assertThat(MqttSubscribeScenario.receivedMessages).all {
@@ -83,7 +85,8 @@ internal class MqttSubscribeScenarioIntegrationTest {
         val topicName = "test/json"
         client.publish(topicName, JsonMapper().writeValueAsBytes(MqttSubscribeScenario.User("1")))
 
-        val exitCode = QalipsisTestRunner.withScenarios("subscriber-mqtt-json-deserializer").execute()
+        val exitCode =
+            QalipsisTestRunner.withScenarios("subscriber-mqtt-json-deserializer").withEnvironments("scenario").execute()
 
         Assertions.assertEquals(0, exitCode)
         assertThat(MqttSubscribeScenario.receivedMessages).all {
@@ -99,7 +102,9 @@ internal class MqttSubscribeScenarioIntegrationTest {
         val topicName = "test/bytearray"
         client.publish(topicName, "30".toByteArray())
 
-        val exitCode = QalipsisTestRunner.withScenarios("subscriber-mqtt-bytearray-deserializer").execute()
+        val exitCode =
+            QalipsisTestRunner.withScenarios("subscriber-mqtt-bytearray-deserializer").withEnvironments("scenario")
+                .execute()
 
         Assertions.assertEquals(0, exitCode)
         assertThat(MqttSubscribeScenario.receivedMessages).all {
@@ -115,7 +120,9 @@ internal class MqttSubscribeScenarioIntegrationTest {
         val topicName = "test/custom"
         client.publish(topicName, JsonMapper().writeValueAsBytes(MqttSubscribeScenario.User("4")))
 
-        val exitCode = QalipsisTestRunner.withScenarios("subscriber-mqtt-custom-deserializer").execute()
+        val exitCode =
+            QalipsisTestRunner.withScenarios("subscriber-mqtt-custom-deserializer").withEnvironments("scenario")
+                .execute()
 
         Assertions.assertEquals(0, exitCode)
         assertThat(MqttSubscribeScenario.receivedMessages).all {
