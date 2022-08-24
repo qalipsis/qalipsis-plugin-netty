@@ -2,6 +2,7 @@ package io.qalipsis.plugins.netty.socket
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
+import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
@@ -106,7 +107,7 @@ internal abstract class PooledSocketClientStep<I, O, CONF : SocketClientConfigur
     /**
      * This has no effect on pooled steps.
      */
-    override suspend fun close(context: StepContext<*, *>) = Unit
+    override suspend fun close(minionId: MinionId) = Unit
 
     /**
      * This has no effect on pooled steps.
