@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.util.ReferenceCounted
+import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
@@ -155,7 +156,7 @@ internal class PooledHttpClientStep<I, O>(
     /**
      * This has no effect on pooled steps.
      */
-    override suspend fun close(context: StepContext<*, *>) = Unit
+    override suspend fun close(minionId: MinionId) = Unit
 
     /**
      * This has no effect on pooled steps.

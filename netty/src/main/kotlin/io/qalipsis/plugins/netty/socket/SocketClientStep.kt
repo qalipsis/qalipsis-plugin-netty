@@ -1,5 +1,6 @@
 package io.qalipsis.plugins.netty.socket
 
+import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.steps.Step
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
@@ -30,7 +31,7 @@ internal interface SocketClientStep<I, REQ : Any, RES : Any, O> : Step<I, O> {
     /**
      * Closes the connection if not yet done.
      */
-    suspend fun close(context: StepContext<*, *>) = Unit
+    suspend fun close(minionId: MinionId) = Unit
 
     /**
      * Add a further step as a user of the same connection.

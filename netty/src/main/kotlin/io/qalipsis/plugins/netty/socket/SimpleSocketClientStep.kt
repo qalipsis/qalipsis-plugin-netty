@@ -204,8 +204,8 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
     /**
      * Closes the connection if not yet done.
      */
-    override suspend fun close(context: StepContext<*, *>) {
-        acquireClient(context.minionId).close()
+    override suspend fun close(minionId: MinionId) {
+        acquireClient(minionId).close()
     }
 
     /**
