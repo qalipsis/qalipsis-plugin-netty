@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 AERIS IT Solutions GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -7,7 +23,7 @@ plugins {
     `java-test-fixtures`
 }
 
-description = "Qalipsis Plugins - Netty clients"
+description = "QALIPSIS plugin for HTTP, TCP, UDP and MQTT using Netty"
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
@@ -36,28 +52,18 @@ allOpen {
     )
 }
 
-val nettyVersion = "4.1.74.Final"
-val micronautVersion: String by project
-val jacksonVersion: String by project
-val kotlinCoroutinesVersion: String by project
-val guavaVersion: String by project
-val testContainersVersion: String by project
-val catadioptreVersion: String by project
-
 kotlin.sourceSets["test"].kotlin.srcDir("build/generated/source/kaptKotlin/catadioptre")
 kapt.useBuildCache = false
 
-logger.lifecycle("Using Micronaut $micronautVersion and Netty $nettyVersion")
+val coreVersion: String by project
 
 dependencies {
-    compileOnly("io.aeris-consulting:catadioptre-annotations:${catadioptreVersion}")
-    compileOnly(kotlin("stdlib"))
-    compileOnly(platform("io.micronaut:micronaut-bom:$micronautVersion"))
+    implementation(platform("io.qalipsis:plugin-platform:${coreVersion}"))
+    compileOnly("io.aeris-consulting:catadioptre-annotations")
     compileOnly("io.micronaut:micronaut-runtime")
-    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlinCoroutinesVersion}")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation(platform("io.netty:netty-bom:$nettyVersion"))
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
     api("io.netty:netty-handler")
     api("io.netty:netty-handler-proxy")
     api("io.netty:netty-transport")
@@ -68,51 +74,48 @@ dependencies {
     api("io.netty:netty-codec-http")
     api("io.netty:netty-codec-http2")
     api("io.netty:netty-codec-mqtt")
-    implementation("com.github.ben-manes.caffeine:caffeine:2.8.1")
-    implementation("com.google.guava:guava:$guavaVersion")
+    implementation("com.github.ben-manes.caffeine:caffeine")
+    implementation("com.google.guava:guava")
 
-    api("io.qalipsis:api-common:${project.version}")
-    api("io.qalipsis:api-dsl:${project.version}")
+    api("io.qalipsis:api-common")
+    api("io.qalipsis:api-dsl")
 
-    kapt(platform("io.micronaut:micronaut-bom:$micronautVersion"))
-    kapt("io.qalipsis:api-processors:${project.version}")
-    kapt("io.qalipsis:api-dsl:${project.version}")
-    kapt("io.qalipsis:api-common:${project.version}")
-    kapt("io.aeris-consulting:catadioptre-annotations:${catadioptreVersion}")
+    kapt(platform("io.qalipsis:plugin-platform:${coreVersion}"))
+    kapt("io.qalipsis:api-processors")
+    kapt("io.qalipsis:api-dsl")
+    kapt("io.qalipsis:api-common")
+    kapt("io.aeris-consulting:catadioptre-annotations")
 
-    testFixturesImplementation(kotlin("stdlib"))
-    testFixturesImplementation("io.qalipsis:api-common:${project.version}")
-    testFixturesImplementation("io.qalipsis:test:${project.version}")
-    testFixturesImplementation(platform("io.netty:netty-bom:$nettyVersion"))
+    testFixturesImplementation(platform("io.qalipsis:plugin-platform:${coreVersion}"))
+    testFixturesImplementation("io.qalipsis:api-common")
+    testFixturesImplementation("io.qalipsis:test")
     testFixturesImplementation("io.netty:netty-handler")
     testFixturesImplementation("io.netty:netty-transport")
     testFixturesImplementation("io.netty:netty-handler-proxy")
     testFixturesImplementation("io.netty:netty-buffer")
-    testFixturesImplementation("io.netty:netty-example") {  // FIXME Remove after implementation
+    testFixturesImplementation("io.netty:netty-example") {
         exclude("io.netty", "netty-tcnative")
     }
-
-    testFixturesImplementation(platform("io.micronaut:micronaut-bom:$micronautVersion"))
     testFixturesImplementation("io.micronaut:micronaut-http-server-netty")
     testFixturesImplementation("io.micronaut.reactor:micronaut-reactor")
-    testFixturesImplementation("io.aeris-consulting:catadioptre-kotlin:+")
+    testFixturesImplementation("io.aeris-consulting:catadioptre-kotlin")
     kaptTestFixtures("io.micronaut:micronaut-inject-java")
 
-    testImplementation("io.qalipsis:test:${project.version}")
-    testImplementation("io.qalipsis:api-dsl:${project.version}")
-    testImplementation(testFixtures("io.qalipsis:api-dsl:${project.version}"))
-    testImplementation(testFixtures("io.qalipsis:api-common:${project.version}"))
-    testImplementation(testFixtures("io.qalipsis:runtime:${project.version}"))
+    testImplementation(platform("io.qalipsis:plugin-platform:${coreVersion}"))
+    testImplementation("io.qalipsis:test")
+    testImplementation("io.qalipsis:api-dsl")
+    testImplementation(testFixtures("io.qalipsis:api-dsl"))
+    testImplementation(testFixtures("io.qalipsis:api-common"))
+    testImplementation(testFixtures("io.qalipsis:runtime"))
     testImplementation("javax.annotation:javax.annotation-api")
     testImplementation("io.micronaut:micronaut-runtime")
-    testImplementation("io.micronaut:micronaut-http-client") // FIXME Remove after implementation
-    testImplementation("org.apache.commons:commons-lang3:3.12.0")
-    testImplementation("io.aeris-consulting:catadioptre-kotlin:${catadioptreVersion}")
-    testRuntimeOnly("io.qalipsis:runtime:${project.version}")
-    testRuntimeOnly("io.qalipsis:head:${project.version}")
-    testRuntimeOnly("io.qalipsis:factory:${project.version}")
+    testImplementation("org.apache.commons:commons-lang3")
+    testImplementation("io.aeris-consulting:catadioptre-kotlin")
+    testRuntimeOnly("io.qalipsis:runtime")
+    testRuntimeOnly("io.qalipsis:head")
+    testRuntimeOnly("io.qalipsis:factory")
 
-    kaptTest(platform("io.micronaut:micronaut-bom:$micronautVersion"))
+    kaptTest(platform("io.qalipsis:plugin-platform:${coreVersion}"))
     kaptTest("io.micronaut:micronaut-inject-java")
-    kaptTest("io.qalipsis:api-processors:${project.version}")
+    kaptTest("io.qalipsis:api-processors")
 }
