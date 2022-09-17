@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 AERIS IT Solutions GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package io.qalipsis.plugins.netty.http.client
 
 import assertk.all
@@ -544,9 +560,7 @@ internal class Http1ClientIntegrationTest {
 
         val requestMetadata = exchange(this, configuration, server, proxyServer, ctx, monitoringCollector, request)
         assertThat(requestMetadata).all {
-            prop(RequestMetadata::uri).isEqualTo(
-                "${server.url}/get?param1=value1&param1=value2&param2=value3"
-            )
+            prop(RequestMetadata::uri).isNotNull().endsWith("/get?param1=value1&param1=value2&param2=value3")
             prop(RequestMetadata::path).isEqualTo("/get")
             prop(RequestMetadata::version).isEqualTo("HTTP_1_1")
             prop(RequestMetadata::method).isEqualTo("GET")
@@ -634,9 +648,7 @@ internal class Http1ClientIntegrationTest {
 
         val requestMetadata = exchange(this, configuration, server, proxyServer, ctx, monitoringCollector, request)
         assertThat(requestMetadata).all {
-            prop(RequestMetadata::uri).isEqualTo(
-                "${server.url}/any/url?param1=value1&param1=value2&param2=value3"
-            )
+            prop(RequestMetadata::uri).isNotNull().endsWith("/any/url?param1=value1&param1=value2&param2=value3")
             prop(RequestMetadata::path).isEqualTo("/any/url")
             prop(RequestMetadata::version).isEqualTo("HTTP_1_1")
             prop(RequestMetadata::method).isEqualTo("PUT")
@@ -729,7 +741,7 @@ internal class Http1ClientIntegrationTest {
 
         val requestMetadata = exchange(this, configuration, server, proxyServer, ctx, monitoringCollector, request)
         assertThat(requestMetadata).all {
-            prop(RequestMetadata::uri).isEqualTo("${server.url}/")
+            prop(RequestMetadata::uri).isNotNull().endsWith("/")
             prop(RequestMetadata::path).isEqualTo("/")
             prop(RequestMetadata::version).isEqualTo("HTTP_1_1")
             prop(RequestMetadata::method).isEqualTo("POST")
@@ -816,7 +828,7 @@ internal class Http1ClientIntegrationTest {
         val requestMetadata = exchange(this, configuration, server, proxyServer, ctx, monitoringCollector, request)
 
         assertThat(requestMetadata).all {
-            prop(RequestMetadata::uri).isEqualTo("${server.url}/send/form")
+            prop(RequestMetadata::uri).isNotNull().endsWith("/send/form")
             prop(RequestMetadata::path).isEqualTo("/send/form")
             prop(RequestMetadata::version).isEqualTo("HTTP_1_1")
             prop(RequestMetadata::method).isEqualTo("PATCH")
