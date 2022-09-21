@@ -40,9 +40,9 @@ internal object MqttSubscribeScenario {
 
     internal val receivedMessages = concurrentSet<String>()
 
-    @Scenario
+    @Scenario("subscriber-mqtt-string-deserializer")
     fun subscribeRecordsStringDeserializer() {
-        scenario("subscriber-mqtt-string-deserializer") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.
@@ -61,9 +61,9 @@ internal object MqttSubscribeScenario {
             .onEach { receivedMessages.add(it.value!!) }
     }
 
-    @Scenario
+    @Scenario("subscriber-mqtt-json-deserializer")
     fun subscribeRecordsJsonDeserializer() {
-        scenario("subscriber-mqtt-json-deserializer") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.
@@ -82,9 +82,9 @@ internal object MqttSubscribeScenario {
             .onEach { receivedMessages.add(it.value!!.id) }
     }
 
-    @Scenario
+    @Scenario("subscriber-mqtt-bytearray-deserializer")
     fun subscribeRecordsByteArrayDeserializer() {
-        scenario("subscriber-mqtt-bytearray-deserializer") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.
@@ -104,9 +104,9 @@ internal object MqttSubscribeScenario {
         }
     }
 
-    @Scenario
+    @Scenario("subscriber-mqtt-custom-deserializer")
     fun subscribeRecordsCustomDeserializer() {
-        scenario("subscriber-mqtt-custom-deserializer") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.

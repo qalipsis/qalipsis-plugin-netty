@@ -28,6 +28,7 @@ import assertk.assertions.isTrue
 import assertk.assertions.prop
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.scenario.StepSpecificationRegistry
+import io.qalipsis.api.scenario.TestScenarioFactory
 import io.qalipsis.api.scenario.scenario
 import io.qalipsis.api.steps.DummyStepSpecification
 import io.qalipsis.plugins.netty.Monitoring
@@ -168,7 +169,7 @@ internal class TcpClientStepSpecificationImplTest {
 
         @Test
         internal fun `should add tcp step to scenario`() {
-            val scenario = scenario("my-scenario") as StepSpecificationRegistry
+            val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
             val requestSpecification: suspend (StepContext<*, *>, Unit) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             scenario.netty().tcp {

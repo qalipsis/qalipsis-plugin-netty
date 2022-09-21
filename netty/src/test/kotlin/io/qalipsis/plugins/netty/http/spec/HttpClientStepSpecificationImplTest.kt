@@ -29,6 +29,7 @@ import assertk.assertions.prop
 import io.netty.handler.codec.http.HttpMethod
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.scenario.StepSpecificationRegistry
+import io.qalipsis.api.scenario.TestScenarioFactory
 import io.qalipsis.api.scenario.scenario
 import io.qalipsis.api.steps.DummyStepSpecification
 import io.qalipsis.plugins.netty.Monitoring
@@ -167,7 +168,7 @@ internal class HttpClientStepSpecificationImplTest {
 
         @Test
         internal fun `should add http step to scenario`() {
-            val scenario = scenario("my-scenario") as StepSpecificationRegistry
+            val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
             val requestSpecification: suspend (ctx: StepContext<*, *>, input: Unit) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             scenario.netty().http {

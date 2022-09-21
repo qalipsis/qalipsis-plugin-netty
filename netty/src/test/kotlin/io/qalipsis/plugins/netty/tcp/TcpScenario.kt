@@ -49,10 +49,10 @@ object TcpScenario {
 
     private val request2 = "My second TCP request".toByteArray(StandardCharsets.UTF_8)
 
-    @Scenario
+    @Scenario("hello-netty-simple-tcp-world")
     fun mySimpleScenario() {
 
-        scenario("hello-netty-simple-tcp-world") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.
@@ -83,10 +83,10 @@ object TcpScenario {
     }
 
 
-    @Scenario
+    @Scenario("hello-netty-pooled-tcp-world")
     fun myPooledScenario() {
 
-        scenario("hello-netty-pooled-tcp-world") {
+        scenario {
             minionsCount = pooledMinions
             profile {
                 // Starts all at once.

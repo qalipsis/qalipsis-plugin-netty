@@ -22,6 +22,7 @@ import assertk.assertions.*
 import io.qalipsis.api.messaging.deserializer.MessageJsonDeserializer
 import io.qalipsis.api.messaging.deserializer.MessageStringDeserializer
 import io.qalipsis.api.scenario.StepSpecificationRegistry
+import io.qalipsis.api.scenario.TestScenarioFactory
 import io.qalipsis.api.scenario.scenario
 import io.qalipsis.api.steps.SingletonConfiguration
 import io.qalipsis.api.steps.SingletonType
@@ -41,7 +42,7 @@ import java.time.Duration
 internal class MqttSubscribeStepSpecificationImplTest {
     @Test
     internal fun `should add minimal specification to the scenario with default values`() {
-        val scenario = scenario("my-scenario") as StepSpecificationRegistry
+        val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
         scenario.netty().mqttSubscribe {
             name = "my-step"
             topicFilter("test")
@@ -83,7 +84,7 @@ internal class MqttSubscribeStepSpecificationImplTest {
 
     @Test
     internal fun `should add a complete specification to the scenario as broadcast with monitoring`() {
-        val scenario = scenario("my-scenario") as StepSpecificationRegistry
+        val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
         scenario.netty().mqttSubscribe {
             name = "my-complete-step"
             topicFilter("complete-test")
@@ -140,7 +141,7 @@ internal class MqttSubscribeStepSpecificationImplTest {
 
     @Test
     internal fun `should add a complete specification to the scenario as broadcast with eventsLogger`() {
-        val scenario = scenario("my-scenario") as StepSpecificationRegistry
+        val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
         scenario.netty().mqttSubscribe {
             name = "my-complete-step"
             topicFilter("complete-test")
@@ -197,7 +198,7 @@ internal class MqttSubscribeStepSpecificationImplTest {
 
     @Test
     internal fun `should keep default values and use another deserialization`() {
-        val scenario = scenario("my-scenario") as StepSpecificationRegistry
+        val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
         scenario.netty().mqttSubscribe {
             name = "my-step"
             topicFilter("test")

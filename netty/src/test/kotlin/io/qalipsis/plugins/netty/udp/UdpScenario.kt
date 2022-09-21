@@ -38,9 +38,9 @@ object UdpScenario {
 
     private val request = "My UDP request".toByteArray(StandardCharsets.UTF_8)
 
-    @Scenario
+    @Scenario("hello-netty-udp-world")
     fun myScenario() {
-        scenario("hello-netty-udp-world") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.

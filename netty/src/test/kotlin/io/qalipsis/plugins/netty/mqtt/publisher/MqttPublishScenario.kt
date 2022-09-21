@@ -36,10 +36,10 @@ internal object MqttPublishScenario {
 
     internal val receivedMessages = concurrentSet<String>()
 
-    @Scenario
+    @Scenario("publisher-mqtt")
     fun publishRecords() {
 
-        scenario("publisher-mqtt") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.

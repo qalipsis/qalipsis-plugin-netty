@@ -52,10 +52,10 @@ object Http2Scenario {
 
     private val request2 = SimpleHttpRequest(HttpMethod.POST, "/").body("This is my content")
 
-    @Scenario
+    @Scenario("hello-netty-simple-http2-world")
     fun mySimpleScenario() {
 
-        scenario("hello-netty-simple-http2-world") {
+        scenario {
             minionsCount = minions
             profile {
                 // Starts all at once.
@@ -88,10 +88,10 @@ object Http2Scenario {
             .closeHttp("my-http")
     }
 
-    @Scenario
+    @Scenario("hello-netty-pooled-http2-world")
     fun myPooledScenario() {
 
-        scenario("hello-netty-pooled-http2-world") {
+        scenario {
             minionsCount = pooledMinions
             profile {
                 // Starts all at once.
