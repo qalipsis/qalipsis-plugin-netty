@@ -23,6 +23,7 @@ import io.qalipsis.api.steps.ConfigurableStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.NettyPluginSpecification
 import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublishRecord
+import io.qalipsis.plugins.netty.mqtt.publisher.MqttPublishResult
 import io.qalipsis.plugins.netty.mqtt.spec.MqttAuthentication
 import io.qalipsis.plugins.netty.mqtt.spec.MqttConnectionConfiguration
 import io.qalipsis.plugins.netty.mqtt.spec.MqttVersion
@@ -30,8 +31,8 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 interface MqttPublishStepSpecification<I> :
-    NettyPluginSpecification<I, I, MqttPublishStepSpecification<I>>,
-    ConfigurableStepSpecification<I, I, MqttPublishStepSpecification<I>> {
+    NettyPluginSpecification<I, MqttPublishResult<I>, MqttPublishStepSpecification<I>>,
+    ConfigurableStepSpecification<I, MqttPublishResult<I>, MqttPublishStepSpecification<I>> {
 
     /**
      * Configures the connection of the MQTT broker, defaults to localhost:1883.
@@ -71,8 +72,8 @@ interface MqttPublishStepSpecification<I> :
  * @author Gabriel Moraes
  */
 @Spec
-internal class MqttPublishStepSpecificationImpl<I> : AbstractStepSpecification<I, I, MqttPublishStepSpecification<I>>(),
-    MqttPublishStepSpecification<I>, NettyPluginSpecification<I, I, MqttPublishStepSpecification<I>> {
+internal class MqttPublishStepSpecificationImpl<I> : AbstractStepSpecification<I, MqttPublishResult<I>, MqttPublishStepSpecification<I>>(),
+    MqttPublishStepSpecification<I>, NettyPluginSpecification<I, MqttPublishResult<I>, MqttPublishStepSpecification<I>> {
 
     internal var monitoringConfig = StepMonitoringConfiguration()
 
