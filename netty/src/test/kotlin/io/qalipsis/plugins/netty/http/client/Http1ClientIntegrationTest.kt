@@ -20,7 +20,6 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.*
 import com.google.common.io.Files
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.confirmVerified
@@ -36,6 +35,7 @@ import io.netty.util.ReferenceCountUtil
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.logging.LoggerHelper.logger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.configuration.TlsConfiguration
 import io.qalipsis.plugins.netty.http.client.monitoring.HttpStepContextBasedSocketMonitoringCollector
@@ -91,7 +91,7 @@ internal class Http1ClientIntegrationTest {
     lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    lateinit var meterRegistry: MeterRegistry
+    lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     private lateinit var ctx: StepContext<String, ConnectionAndRequestResult<String, ByteArray>>

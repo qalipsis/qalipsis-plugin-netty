@@ -18,7 +18,6 @@ package io.qalipsis.plugins.netty.mqtt.publisher
 
 import io.aerisconsulting.catadioptre.setProperty
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tags
 import io.mockk.coEvery
 import io.mockk.confirmVerified
@@ -29,6 +28,7 @@ import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.mqtt.MqttClient
 import io.qalipsis.plugins.netty.mqtt.MqttClientOptions
@@ -75,7 +75,7 @@ internal class MqttPublishStepTest {
         val recordsCountMock = relaxedMockk<Counter> { }
         val sentBytesMock = relaxedMockk<Counter> { }
         val metersTags = relaxedMockk<Tags>()
-        val meterRegistry = relaxedMockk<MeterRegistry> {
+        val meterRegistry = relaxedMockk<CampaignMeterRegistry> {
             every { counter("mqtt-publish-sent-records", refEq(metersTags)) } returns recordsCountMock
             every { counter("mqtt-publish-sent-value-bytes", refEq(metersTags)) } returns sentBytesMock
         }

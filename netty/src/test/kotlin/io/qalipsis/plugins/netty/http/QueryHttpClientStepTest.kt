@@ -24,7 +24,6 @@ import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import assertk.assertions.isTrue
 import assertk.assertions.prop
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.confirmVerified
@@ -34,6 +33,7 @@ import io.mockk.slot
 import io.netty.handler.codec.http.HttpResponse
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.http.request.HttpRequest
 import io.qalipsis.plugins.netty.http.response.ResponseConverter
@@ -68,7 +68,7 @@ internal class QueryHttpClientStepTest {
     lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    lateinit var meterRegistry: MeterRegistry
+    lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     lateinit var simpleHttpClientStep: SimpleHttpClientStep<*, *>

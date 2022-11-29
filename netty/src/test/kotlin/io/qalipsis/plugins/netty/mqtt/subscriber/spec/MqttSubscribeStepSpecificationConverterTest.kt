@@ -24,7 +24,6 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import io.aerisconsulting.catadioptre.invokeInvisible
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
@@ -33,6 +32,7 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageJsonDeserializer
 import io.qalipsis.api.messaging.deserializer.MessageStringDeserializer
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepCreationContextImpl
 import io.qalipsis.api.steps.StepMonitoringConfiguration
@@ -230,7 +230,7 @@ internal class MqttSubscribeStepSpecificationConverterTest :
         // then
         assertThat(recordsConverter).isNotNull().isInstanceOf(MqttSubscribeConverter::class).all {
             prop("valueDeserializer").isSameAs(valueDeserializer)
-            prop("meterRegistry").isNotNull().isInstanceOf(MeterRegistry::class)
+            prop("meterRegistry").isNotNull().isInstanceOf(CampaignMeterRegistry::class)
             prop("eventsLogger").isNull()
         }
         confirmVerified(meterRegistry)

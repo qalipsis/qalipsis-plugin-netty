@@ -27,9 +27,8 @@ import assertk.assertions.prop
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.scenario.TestScenarioFactory
-import io.qalipsis.api.scenario.scenario
 import io.qalipsis.api.steps.DummyStepSpecification
-import io.qalipsis.plugins.netty.Monitoring
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.configuration.ConnectionConfiguration
 import io.qalipsis.plugins.netty.netty
 import org.junit.jupiter.api.Test
@@ -58,8 +57,8 @@ internal class UdpClientStepSpecificationTest {
                 prop(ConnectionConfiguration::port).isEqualTo(12234)
             }
             prop(UdpClientStepSpecification<*>::monitoringConfiguration).all {
-                prop(Monitoring::events).isFalse()
-                prop(Monitoring::meters).isFalse()
+                prop(StepMonitoringConfiguration::events).isFalse()
+                prop(StepMonitoringConfiguration::meters).isFalse()
             }
         }
     }
@@ -86,8 +85,8 @@ internal class UdpClientStepSpecificationTest {
                 prop(ConnectionConfiguration::port).isEqualTo(12234)
             }
             prop(UdpClientStepSpecification<*>::monitoringConfiguration).all {
-                prop(Monitoring::events).isTrue()
-                prop(Monitoring::meters).isFalse()
+                prop(StepMonitoringConfiguration::events).isTrue()
+                prop(StepMonitoringConfiguration::meters).isFalse()
             }
         }
     }
@@ -114,8 +113,8 @@ internal class UdpClientStepSpecificationTest {
                 prop(ConnectionConfiguration::port).isEqualTo(12234)
             }
             prop(UdpClientStepSpecification<*>::monitoringConfiguration).all {
-                prop(Monitoring::events).isFalse()
-                prop(Monitoring::meters).isTrue()
+                prop(StepMonitoringConfiguration::events).isFalse()
+                prop(StepMonitoringConfiguration::meters).isTrue()
             }
         }
     }

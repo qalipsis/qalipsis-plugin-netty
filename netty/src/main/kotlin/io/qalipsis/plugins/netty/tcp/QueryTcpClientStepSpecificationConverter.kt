@@ -16,12 +16,12 @@
 
 package io.qalipsis.plugins.netty.tcp
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.Executors
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.exceptions.InvalidSpecificationException
 import io.qalipsis.api.logging.LoggerHelper.logger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.steps.Step
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepDecorator
@@ -40,7 +40,7 @@ import kotlin.coroutines.CoroutineContext
 internal class QueryTcpClientStepSpecificationConverter(
     @Named(Executors.IO_EXECUTOR_NAME) private val ioCoroutineContext: CoroutineContext,
     private val eventsLogger: EventsLogger,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: CampaignMeterRegistry
 ) :
     StepSpecificationConverter<QueryTcpClientStepSpecification<*>> {
 

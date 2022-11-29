@@ -16,10 +16,10 @@
 
 package io.qalipsis.plugins.netty.tcp
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.plugins.netty.socket.QuerySocketClientStep
 import io.qalipsis.plugins.netty.socket.SocketClientStep
@@ -37,7 +37,7 @@ internal class QueryTcpClientStep<I>(
     connectionOwner: TcpClientStep<*, *>,
     requestFactory: suspend (StepContext<*, *>, I) -> ByteArray,
     eventsLogger: EventsLogger?,
-    meterRegistry: MeterRegistry?
+    meterRegistry: CampaignMeterRegistry?
 ) : QuerySocketClientStep<I, ByteArray, ByteArray, ByteArray, SocketClientStep<*, ByteArray, ByteArray, *>>(
     id,
     retryPolicy,

@@ -16,17 +16,17 @@
 
 package io.qalipsis.plugins.netty.udp
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepError
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.monitoring.MonitoringCollector
 import java.time.Duration
 
 internal class UdpMonitoringCollector(
     private val stepContext: StepContext<*, *>,
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?,
+    private val meterRegistry: CampaignMeterRegistry?,
     stepQualifier: String
 ) : MonitoringCollector {
 

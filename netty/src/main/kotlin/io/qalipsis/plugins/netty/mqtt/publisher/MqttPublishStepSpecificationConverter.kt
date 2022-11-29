@@ -16,10 +16,10 @@
 
 package io.qalipsis.plugins.netty.mqtt.publisher
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.api.steps.StepSpecificationConverter
@@ -27,6 +27,7 @@ import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.mqtt.MqttClientOptions
 import io.qalipsis.plugins.netty.mqtt.publisher.spec.MqttPublishConfiguration
 import io.qalipsis.plugins.netty.mqtt.publisher.spec.MqttPublishStepSpecificationImpl
+
 /**
  * [StepSpecificationConverter] from [MqttPublishStepSpecificationImpl] to [MqttPublishStep].
  *
@@ -35,7 +36,7 @@ import io.qalipsis.plugins.netty.mqtt.publisher.spec.MqttPublishStepSpecificatio
 @StepConverter
 internal class MqttPublishStepSpecificationConverter(
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
-    private val meterRegistry: MeterRegistry,
+    private val meterRegistry: CampaignMeterRegistry,
     private val eventsLogger: EventsLogger,
 ) : StepSpecificationConverter<MqttPublishStepSpecificationImpl<*>> {
 

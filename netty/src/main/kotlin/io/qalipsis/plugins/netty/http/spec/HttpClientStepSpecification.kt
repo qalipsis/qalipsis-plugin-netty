@@ -21,7 +21,7 @@ import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.ConfigurableStepSpecification
-import io.qalipsis.plugins.netty.Monitoring
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.NettyPluginSpecification
 import io.qalipsis.plugins.netty.NettyScenarioSpecification
 import io.qalipsis.plugins.netty.RequestResult
@@ -29,7 +29,6 @@ import io.qalipsis.plugins.netty.http.request.HttpRequest
 import io.qalipsis.plugins.netty.http.response.HttpResponse
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import io.qalipsis.plugins.netty.tcp.spec.SocketClientPoolConfiguration
-import io.qalipsis.plugins.netty.tcp.spec.TcpClientStepSpecification
 import kotlin.reflect.KClass
 
 interface HttpClientStepSpecification<INPUT, OUTPUT> :
@@ -56,7 +55,7 @@ interface HttpClientStepSpecification<INPUT, OUTPUT> :
     /**
      * Configures the monitoring of the step.
      */
-    fun monitoring(configurationBlock: Monitoring.() -> Unit)
+    fun monitoring(configurationBlock: StepMonitoringConfiguration.() -> Unit)
 
     /**
      * Deserialize the body into the defined type using the first [io.qalipsis.plugins.netty.http.response.HttpBodyDeserializer] matching the content type
@@ -83,7 +82,7 @@ internal class HttpClientStepSpecificationImpl<INPUT, OUTPUT> :
 
     var poolConfiguration: SocketClientPoolConfiguration? = null
 
-    val monitoringConfiguration = Monitoring()
+    val monitoringConfiguration = StepMonitoringConfiguration()
 
     override fun request(requestFactory: suspend (StepContext<*, *>, INPUT) -> HttpRequest<*>) {
         this.requestFactory = requestFactory
@@ -98,7 +97,7 @@ internal class HttpClientStepSpecificationImpl<INPUT, OUTPUT> :
             .also { it.configurationBlock() }
     }
 
-    override fun monitoring(configurationBlock: Monitoring.() -> Unit) {
+    override fun monitoring(configurationBlock: StepMonitoringConfiguration.() -> Unit) {
         monitoringConfiguration.configurationBlock()
     }
 
@@ -159,13 +158,13 @@ class QueryHttpClientStepSpecification<INPUT, OUTPUT>(val stepName: String) :
 
     var bodyType: KClass<*> = String::class
 
-    internal val monitoringConfiguration = Monitoring()
+    internal val monitoringConfiguration = StepMonitoringConfiguration()
 
     fun request(requestBlock: suspend (StepContext<*, *>, input: INPUT) -> HttpRequest<*>) {
         this.requestFactory = requestBlock
     }
 
-    fun monitoring(configurationBlock: Monitoring.() -> Unit) {
+    fun monitoring(configurationBlock: StepMonitoringConfiguration.() -> Unit) {
         monitoringConfiguration.configurationBlock()
     }
 

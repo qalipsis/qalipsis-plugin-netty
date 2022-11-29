@@ -30,9 +30,8 @@ import io.netty.handler.codec.http.HttpMethod
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.scenario.TestScenarioFactory
-import io.qalipsis.api.scenario.scenario
 import io.qalipsis.api.steps.DummyStepSpecification
-import io.qalipsis.plugins.netty.Monitoring
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.configuration.TlsConfiguration
 import io.qalipsis.plugins.netty.http.request.HttpRequest
 import io.qalipsis.plugins.netty.http.request.SimpleHttpRequest
@@ -84,8 +83,8 @@ internal class HttpClientStepSpecificationImplTest {
                     prop(HttpClientConfiguration::proxyConfiguration).isNull()
                 }
                 prop(HttpClientStepSpecificationImpl<*, *>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isFalse()
-                    prop(Monitoring::meters).isFalse()
+                    prop(StepMonitoringConfiguration::events).isFalse()
+                    prop(StepMonitoringConfiguration::meters).isFalse()
                 }
             }
         }
@@ -160,8 +159,8 @@ internal class HttpClientStepSpecificationImplTest {
                     prop(SocketClientPoolConfiguration::checkHealthBeforeUse).isEqualTo(true)
                 }
                 prop(HttpClientStepSpecificationImpl<*, *>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isTrue()
-                    prop(Monitoring::meters).isTrue()
+                    prop(StepMonitoringConfiguration::events).isTrue()
+                    prop(StepMonitoringConfiguration::meters).isTrue()
                 }
             }
         }
@@ -200,8 +199,8 @@ internal class HttpClientStepSpecificationImplTest {
                     prop(HttpClientConfiguration::proxyConfiguration).isNull()
                 }
                 prop(HttpClientStepSpecificationImpl<*, *>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isFalse()
-                    prop(Monitoring::meters).isFalse()
+                    prop(StepMonitoringConfiguration::events).isFalse()
+                    prop(StepMonitoringConfiguration::meters).isFalse()
                 }
             }
         }
@@ -224,8 +223,8 @@ internal class HttpClientStepSpecificationImplTest {
                 prop(QueryHttpClientStepSpecification<*, *>::requestFactory).isSameAs(requestSpecification)
                 prop(QueryHttpClientStepSpecification<*, *>::bodyType).isEqualTo(String::class)
                 prop(QueryHttpClientStepSpecification<*, *>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isFalse()
-                    prop(Monitoring::meters).isFalse()
+                    prop(StepMonitoringConfiguration::events).isFalse()
+                    prop(StepMonitoringConfiguration::meters).isFalse()
                 }
             }
         }
@@ -249,8 +248,8 @@ internal class HttpClientStepSpecificationImplTest {
                 prop(QueryHttpClientStepSpecification<*, *>::requestFactory).isSameAs(requestSpecification)
                 prop(QueryHttpClientStepSpecification<*, *>::bodyType).isEqualTo(Entity::class)
                 prop(QueryHttpClientStepSpecification<*, *>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isTrue()
-                    prop(Monitoring::meters).isTrue()
+                    prop(StepMonitoringConfiguration::events).isTrue()
+                    prop(StepMonitoringConfiguration::meters).isTrue()
                 }
             }
         }

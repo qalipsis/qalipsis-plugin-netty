@@ -23,7 +23,6 @@ import assertk.assertions.index
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tags
 import io.mockk.coEvery
 import io.mockk.confirmVerified
@@ -39,6 +38,7 @@ import io.netty.handler.codec.mqtt.MqttPublishVariableHeader
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.mqtt.spec.MqttQoS
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.coroutines.TestDispatcherProvider
@@ -128,9 +128,9 @@ internal class MqttSubscribeConverterTest{
         )
 
         val metersTags = relaxedMockk<Tags>()
-        var meterRegistry: MeterRegistry? = null
+        var meterRegistry: CampaignMeterRegistry? = null
         if(enableMonitoring == true) {
-            meterRegistry = relaxedMockk<MeterRegistry> {
+            meterRegistry = relaxedMockk {
                 every { counter("mqtt-subscribe-consumed-records", refEq(metersTags)) } returns recordsCounter
                 every { counter("mqtt-subscribe-consumed-value-bytes", refEq(metersTags)) } returns valueBytesCounter
             }

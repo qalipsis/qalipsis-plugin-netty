@@ -16,10 +16,10 @@
 
 package io.qalipsis.plugins.netty.socket
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.RequestResult
@@ -46,7 +46,7 @@ internal abstract class QuerySocketClientStep<I, O : Any, REQ : Any, RES : Any, 
     private val stepQualifier: String,
     private val requestFactory: suspend (StepContext<*, *>, I) -> REQ,
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?
+    private val meterRegistry: CampaignMeterRegistry?
 ) : AbstractStep<I, RequestResult<I, O, *>>(id, retryPolicy) {
 
     override suspend fun execute(context: StepContext<I, RequestResult<I, O, *>>) {

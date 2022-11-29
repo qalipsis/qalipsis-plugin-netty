@@ -20,7 +20,6 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.impl.annotations.RelaxedMockK
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpHeaderNames
@@ -29,6 +28,7 @@ import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.util.ReferenceCountUtil
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.http.client.monitoring.HttpStepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.http.request.SimpleHttpRequest
@@ -55,7 +55,7 @@ internal class MultiSocketHttpClientIntegrationTest {
     lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    lateinit var meterRegistry: MeterRegistry
+    lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     private lateinit var ctx: StepContext<String, ConnectionAndRequestResult<String, String>>

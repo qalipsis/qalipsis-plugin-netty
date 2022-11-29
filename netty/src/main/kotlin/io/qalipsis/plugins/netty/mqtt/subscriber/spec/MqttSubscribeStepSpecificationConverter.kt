@@ -16,11 +16,11 @@
 
 package io.qalipsis.plugins.netty.mqtt.subscriber.spec
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.api.steps.StepSpecification
@@ -40,7 +40,7 @@ import io.qalipsis.plugins.netty.mqtt.subscriber.MqttSubscribeIterativeReader
  */
 @StepConverter
 internal class MqttSubscribeStepSpecificationConverter(
-    private val meterRegistry: MeterRegistry,
+    private val meterRegistry: CampaignMeterRegistry,
     private val eventsLogger: EventsLogger
 ) : StepSpecificationConverter<MqttSubscribeStepSpecificationImpl<*>> {
 

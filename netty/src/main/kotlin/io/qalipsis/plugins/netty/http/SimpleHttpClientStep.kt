@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.http
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponse
@@ -27,6 +26,7 @@ import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.logging.LoggerHelper.logger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.http.client.MultiSocketHttpClient
@@ -58,7 +58,7 @@ internal class SimpleHttpClientStep<I, O>(
     eventLoopGroupSupplier: EventLoopGroupSupplier,
     private val responseConverter: ResponseConverter<O>,
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?
+    private val meterRegistry: CampaignMeterRegistry?
 ) : SimpleSocketClientStep<I, QalipsisHttpResponse<O>, HttpClientConfiguration, HttpRequest<*>, HttpResponse, MultiSocketHttpClient>(
     id,
     retryPolicy,

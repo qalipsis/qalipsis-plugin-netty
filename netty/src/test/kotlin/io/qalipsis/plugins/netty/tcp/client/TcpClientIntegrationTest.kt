@@ -20,7 +20,6 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isTrue
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.confirmVerified
@@ -28,6 +27,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.spyk
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.Server
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
@@ -61,7 +61,7 @@ internal class TcpClientIntegrationTest {
     lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    lateinit var meterRegistry: MeterRegistry
+    lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     private lateinit var ctx: StepContext<String, ConnectionAndRequestResult<String, ByteArray>>

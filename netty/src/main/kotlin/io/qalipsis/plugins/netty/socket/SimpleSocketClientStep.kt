@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.socket
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
@@ -25,6 +24,7 @@ import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.lang.tryAndLogOrNull
 import io.qalipsis.api.logging.LoggerHelper.logger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
@@ -60,7 +60,7 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
     private val stepQualifier: String,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?
+    private val meterRegistry: CampaignMeterRegistry?
 ) : AbstractStep<I, ConnectionAndRequestResult<I, O>>(id, retryPolicy),
     SocketClientStep<I, REQ, RES, ConnectionAndRequestResult<I, O>> {
 

@@ -16,13 +16,13 @@
 
 package io.qalipsis.plugins.netty.socket
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.pool.FixedPool
 import io.qalipsis.api.pool.Pool
 import io.qalipsis.api.retry.RetryPolicy
@@ -56,7 +56,7 @@ internal abstract class PooledSocketClientStep<I, O, CONF : SocketClientConfigur
     private val stepQualifier: String,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?,
+    private val meterRegistry: CampaignMeterRegistry?,
     private val coroutineContext: CoroutineContext
 ) : AbstractStep<I, RequestResult<I, RES, *>>(id, retryPolicy),
     SocketClientStep<I, REQ, RES, RequestResult<I, RES, *>> {

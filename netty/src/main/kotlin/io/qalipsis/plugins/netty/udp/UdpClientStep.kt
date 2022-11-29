@@ -16,12 +16,12 @@
 
 package io.qalipsis.plugins.netty.udp
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
@@ -42,7 +42,7 @@ internal class UdpClientStep<I>(
     private val connectionConfiguration: ConnectionConfiguration,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?
+    private val meterRegistry: CampaignMeterRegistry?
 ) : AbstractStep<I, UdpResult<I, ByteArray>>(id, retryPolicy) {
 
     private lateinit var workerGroup: EventLoopGroup

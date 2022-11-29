@@ -17,7 +17,6 @@
 package io.qalipsis.plugins.netty.mqtt.subscriber
 
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.netty.buffer.ByteBufUtil
 import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.context.StepOutput
@@ -26,6 +25,7 @@ import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.lang.tryAndLogOrNull
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.steps.datasource.DatasourceObjectConverter
 import java.util.concurrent.atomic.AtomicLong
 
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 internal class MqttSubscribeConverter<V>(
     private val valueDeserializer: MessageDeserializer<V>,
-    private val meterRegistry: MeterRegistry?,
+    private val meterRegistry: CampaignMeterRegistry?,
     private val eventsLogger: EventsLogger?
 ) : DatasourceObjectConverter<MqttPublishMessage, MqttSubscribeRecord<V>> {
 

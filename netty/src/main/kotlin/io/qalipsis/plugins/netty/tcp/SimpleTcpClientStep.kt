@@ -16,12 +16,12 @@
 
 package io.qalipsis.plugins.netty.tcp
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.logging.LoggerHelper.logger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
@@ -43,7 +43,7 @@ internal class SimpleTcpClientStep<I>(
     private val clientConfiguration: TcpClientConfiguration,
     eventLoopGroupSupplier: EventLoopGroupSupplier,
     eventsLogger: EventsLogger?,
-    meterRegistry: MeterRegistry?
+    meterRegistry: CampaignMeterRegistry?
 ) : SimpleSocketClientStep<I, ByteArray, TcpClientConfiguration, ByteArray, ByteArray, TcpClient>(
     id,
     retryPolicy,

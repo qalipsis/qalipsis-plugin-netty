@@ -22,12 +22,12 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.prop
 import io.aerisconsulting.catadioptre.coInvokeInvisible
 import io.aerisconsulting.catadioptre.setProperty
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.spyk
 import io.netty.handler.codec.http.HttpMethod
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.http.client.HttpClient
@@ -61,7 +61,7 @@ internal class PooledHttpClientStepIntegrationTest {
     private lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    private lateinit var meterRegistry: MeterRegistry
+    private lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     private lateinit var workerGroupSupplier: EventLoopGroupSupplier

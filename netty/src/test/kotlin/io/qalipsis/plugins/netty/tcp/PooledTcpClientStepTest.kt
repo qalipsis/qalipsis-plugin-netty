@@ -21,7 +21,6 @@ import assertk.assertThat
 import assertk.assertions.*
 import io.aerisconsulting.catadioptre.getProperty
 import io.aerisconsulting.catadioptre.setProperty
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tags
 import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
@@ -30,6 +29,7 @@ import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.pool.FixedPool
 import io.qalipsis.api.pool.Pool
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
@@ -67,7 +67,7 @@ internal class PooledTcpClientStepTest {
     private lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    private lateinit var meterRegistry: MeterRegistry
+    private lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     private lateinit var workerGroupSupplier: EventLoopGroupSupplier

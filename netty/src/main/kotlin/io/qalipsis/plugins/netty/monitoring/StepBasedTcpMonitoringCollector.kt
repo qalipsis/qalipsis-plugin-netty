@@ -16,9 +16,9 @@
 
 package io.qalipsis.plugins.netty.monitoring
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.socket.SocketMonitoringCollector
 import java.time.Duration
 
@@ -29,7 +29,7 @@ import java.time.Duration
  */
 internal class StepBasedTcpMonitoringCollector(
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?,
+    private val meterRegistry: CampaignMeterRegistry?,
     context: StepStartStopContext,
     stepQualifier: String
 ) : SocketMonitoringCollector {

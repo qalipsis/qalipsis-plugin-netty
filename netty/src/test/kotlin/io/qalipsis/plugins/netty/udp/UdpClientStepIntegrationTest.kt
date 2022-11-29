@@ -19,13 +19,13 @@ package io.qalipsis.plugins.netty.udp
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.*
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.coVerifyOrder
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.spyk
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.RequestResult
@@ -59,7 +59,7 @@ internal class UdpClientStepIntegrationTest {
     lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    lateinit var meterRegistry: MeterRegistry
+    lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     private lateinit var workerGroupSupplier: EventLoopGroupSupplier

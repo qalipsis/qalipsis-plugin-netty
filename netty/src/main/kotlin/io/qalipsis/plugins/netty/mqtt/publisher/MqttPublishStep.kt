@@ -17,12 +17,12 @@
 package io.qalipsis.plugins.netty.mqtt.publisher
 
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
@@ -45,7 +45,7 @@ internal class MqttPublishStep<I>(
     id: StepName,
     retryPolicy: RetryPolicy?,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
-    private val meterRegistry: MeterRegistry?,
+    private val meterRegistry: CampaignMeterRegistry?,
     private val eventsLogger: EventsLogger?,
     private val mqttClientOptions: MqttClientOptions,
     private val recordsFactory: (suspend (ctx: StepContext<*, *>, input: I) -> List<MqttPublishRecord>),

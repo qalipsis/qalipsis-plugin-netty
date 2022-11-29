@@ -29,7 +29,6 @@ import assertk.assertions.key
 import assertk.assertions.prop
 import io.aerisconsulting.catadioptre.getProperty
 import io.aerisconsulting.catadioptre.setProperty
-import io.micrometer.core.instrument.MeterRegistry
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.confirmVerified
@@ -43,6 +42,7 @@ import io.netty.handler.codec.http.HttpResponse
 import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.exceptions.ClosedClientException
@@ -87,7 +87,7 @@ internal class SimpleHttpClientStepTest {
     private lateinit var eventsLogger: EventsLogger
 
     @RelaxedMockK
-    private lateinit var meterRegistry: MeterRegistry
+    private lateinit var meterRegistry: CampaignMeterRegistry
 
     @RelaxedMockK
     private lateinit var workerGroupSupplier: EventLoopGroupSupplier

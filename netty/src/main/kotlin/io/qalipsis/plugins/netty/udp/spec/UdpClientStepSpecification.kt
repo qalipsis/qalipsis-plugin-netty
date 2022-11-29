@@ -21,7 +21,7 @@ import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.ConfigurableStepSpecification
-import io.qalipsis.plugins.netty.Monitoring
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.NettyPluginSpecification
 import io.qalipsis.plugins.netty.NettyScenarioSpecification
 import io.qalipsis.plugins.netty.configuration.ConnectionConfiguration
@@ -42,7 +42,7 @@ class UdpClientStepSpecification<INPUT> :
 
     internal val connectionConfiguration = ConnectionConfiguration()
 
-    internal val monitoringConfiguration = Monitoring()
+    internal val monitoringConfiguration = StepMonitoringConfiguration()
 
     fun request(requestFactory: suspend (StepContext<*, *>, INPUT) -> ByteArray) {
         this.requestFactory = requestFactory
@@ -52,7 +52,7 @@ class UdpClientStepSpecification<INPUT> :
         connectionConfiguration.configurationBlock()
     }
 
-    fun monitoring(configurationBlock: Monitoring.() -> Unit) {
+    fun monitoring(configurationBlock: StepMonitoringConfiguration.() -> Unit) {
         monitoringConfiguration.configurationBlock()
     }
 }

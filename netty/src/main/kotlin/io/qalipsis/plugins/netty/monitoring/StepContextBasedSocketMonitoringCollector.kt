@@ -16,11 +16,11 @@
 
 package io.qalipsis.plugins.netty.monitoring
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.lang.concurrentList
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.socket.SocketMonitoringCollector
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import java.time.Duration
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong
 internal open class StepContextBasedSocketMonitoringCollector(
     private val stepContext: StepContext<*, *>,
     protected val eventsLogger: EventsLogger?,
-    protected val meterRegistry: MeterRegistry?,
+    protected val meterRegistry: CampaignMeterRegistry?,
     stepQualifier: String
 ) : SocketMonitoringCollector {
 

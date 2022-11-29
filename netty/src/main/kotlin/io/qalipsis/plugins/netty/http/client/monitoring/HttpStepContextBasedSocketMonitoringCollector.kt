@@ -16,11 +16,11 @@
 
 package io.qalipsis.plugins.netty.http.client.monitoring
 
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 
 /**
@@ -29,7 +29,7 @@ import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringColl
 internal class HttpStepContextBasedSocketMonitoringCollector(
     stepContext: StepContext<*, *>,
     eventsLogger: EventsLogger?,
-    meterRegistry: MeterRegistry?,
+    meterRegistry: CampaignMeterRegistry?,
 ) : StepContextBasedSocketMonitoringCollector(
     stepContext, eventsLogger, meterRegistry, "http"
 ) {

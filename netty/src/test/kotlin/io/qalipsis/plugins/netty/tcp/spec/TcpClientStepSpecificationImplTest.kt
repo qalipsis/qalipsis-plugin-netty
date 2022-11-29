@@ -29,9 +29,8 @@ import assertk.assertions.prop
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.scenario.TestScenarioFactory
-import io.qalipsis.api.scenario.scenario
 import io.qalipsis.api.steps.DummyStepSpecification
-import io.qalipsis.plugins.netty.Monitoring
+import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.configuration.TlsConfiguration
 import io.qalipsis.plugins.netty.netty
 import org.junit.jupiter.api.Nested
@@ -69,8 +68,8 @@ internal class TcpClientStepSpecificationImplTest {
                     prop(TcpClientConfiguration::proxyConfiguration).isNull()
                 }
                 prop(TcpClientStepSpecificationImpl<*>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isFalse()
-                    prop(Monitoring::meters).isFalse()
+                    prop(StepMonitoringConfiguration::events).isFalse()
+                    prop(StepMonitoringConfiguration::meters).isFalse()
                 }
             }
         }
@@ -125,8 +124,8 @@ internal class TcpClientStepSpecificationImplTest {
                     prop(SocketClientPoolConfiguration::checkHealthBeforeUse).isEqualTo(true)
                 }
                 prop(TcpClientStepSpecificationImpl<*>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isTrue()
-                    prop(Monitoring::meters).isTrue()
+                    prop(StepMonitoringConfiguration::events).isTrue()
+                    prop(StepMonitoringConfiguration::meters).isTrue()
                 }
             }
         }
@@ -161,8 +160,8 @@ internal class TcpClientStepSpecificationImplTest {
                     }
                 }
                 prop(TcpClientStepSpecificationImpl<*>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isFalse()
-                    prop(Monitoring::meters).isFalse()
+                    prop(StepMonitoringConfiguration::events).isFalse()
+                    prop(StepMonitoringConfiguration::meters).isFalse()
                 }
             }
         }
@@ -189,8 +188,8 @@ internal class TcpClientStepSpecificationImplTest {
                     prop(TcpClientConfiguration::proxyConfiguration).isNull()
                 }
                 prop(TcpClientStepSpecificationImpl<*>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isFalse()
-                    prop(Monitoring::meters).isFalse()
+                    prop(StepMonitoringConfiguration::events).isFalse()
+                    prop(StepMonitoringConfiguration::meters).isFalse()
                 }
             }
         }
@@ -212,8 +211,8 @@ internal class TcpClientStepSpecificationImplTest {
                 prop(QueryTcpClientStepSpecification<*>::stepName).isEqualTo("my-step-to-reuse")
                 prop(QueryTcpClientStepSpecification<*>::requestFactory).isSameAs(requestSpecification)
                 prop(QueryTcpClientStepSpecification<*>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isFalse()
-                    prop(Monitoring::meters).isFalse()
+                    prop(StepMonitoringConfiguration::events).isFalse()
+                    prop(StepMonitoringConfiguration::meters).isFalse()
                 }
             }
         }
@@ -236,8 +235,8 @@ internal class TcpClientStepSpecificationImplTest {
                 prop(QueryTcpClientStepSpecification<*>::stepName).isEqualTo("my-step-to-reuse")
                 prop(QueryTcpClientStepSpecification<*>::requestFactory).isSameAs(requestSpecification)
                 prop(QueryTcpClientStepSpecification<*>::monitoringConfiguration).all {
-                    prop(Monitoring::events).isTrue()
-                    prop(Monitoring::meters).isTrue()
+                    prop(StepMonitoringConfiguration::events).isTrue()
+                    prop(StepMonitoringConfiguration::meters).isTrue()
                 }
             }
         }
