@@ -43,7 +43,7 @@ internal class HttpStepContextBasedSocketMonitoringCollector(
             status.code(),
             tags = eventTags
         )
-        meterRegistry?.counter("${metersPrefix}-http-status", metersTags + Tag.of("status", status.code().toString()))
+        meterRegistry?.counter("${meterPrefix}-http-status", metersTags + Tag.of("status", status.code().toString()))
             ?.increment()
     }
 
