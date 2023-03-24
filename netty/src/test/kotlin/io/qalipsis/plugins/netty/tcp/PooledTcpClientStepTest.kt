@@ -118,7 +118,7 @@ internal class PooledTcpClientStepTest {
                 prop("eventsLogger").isSameAs(eventsLogger)
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.tcp")
-                prop("metersPrefix").isEqualTo("netty-tcp")
+                prop("meterPrefix").isEqualTo("netty-tcp")
                 prop("eventsTags").isSameAs(eventsTags1)
                 prop("metersTags").isSameAs(meterTags1)
             }
@@ -155,7 +155,7 @@ internal class PooledTcpClientStepTest {
                 prop("eventsLogger").isSameAs(eventsLogger)
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.tcp")
-                prop("metersPrefix").isEqualTo("netty-tcp")
+                prop("meterPrefix").isEqualTo("netty-tcp")
                 prop("eventsTags").isSameAs(eventsTags2)
                 prop("metersTags").isSameAs(meterTags2)
             }
@@ -198,7 +198,7 @@ internal class PooledTcpClientStepTest {
             prop("meterRegistry").isSameAs(meterRegistry)
             prop("stepContext").isSameAs(ctx)
             prop("eventPrefix").isEqualTo("netty.tcp")
-            prop("metersPrefix").isEqualTo("netty-tcp")
+            prop("meterPrefix").isEqualTo("netty-tcp")
         }
         val resultCaptor = slot<RequestResult<String, ByteArray, *>>()
         coVerify { ctx.send(capture(resultCaptor)) }

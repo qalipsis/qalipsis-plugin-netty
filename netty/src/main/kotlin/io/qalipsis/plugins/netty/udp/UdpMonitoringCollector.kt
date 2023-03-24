@@ -39,7 +39,7 @@ internal class UdpMonitoringCollector(
 
     private val eventPrefix = "netty.${stepQualifier}"
 
-    private val metersPrefix = "netty-${stepQualifier}"
+    private val meterPrefix = "netty-${stepQualifier}"
 
     private var sendingStart: Long = 0
 
@@ -51,7 +51,7 @@ internal class UdpMonitoringCollector(
 
     override fun recordSendingRequest() {
         eventsLogger?.info("${eventPrefix}.sending-request", tags = eventTags)
-        meterRegistry?.counter("${metersPrefix}-sending-request", metersTags)
+        meterRegistry?.counter("${meterPrefix}-sending-request", metersTags)
     }
 
     override fun recordSendingData(bytesCount: Int) {
@@ -61,7 +61,7 @@ internal class UdpMonitoringCollector(
         } else {
             eventsLogger?.trace("${eventPrefix}.sending-bytes", bytesCount, tags = eventTags)
         }
-        meterRegistry?.counter("${metersPrefix}-sending-bytes", metersTags)
+        meterRegistry?.counter("${meterPrefix}-sending-bytes", metersTags)
             ?.increment(bytesCount.toDouble())
         metrics.bytesCountToSend = bytesCount
     }
@@ -73,7 +73,7 @@ internal class UdpMonitoringCollector(
         } else {
             eventsLogger?.trace("${eventPrefix}.sent-bytes", arrayOf(timeToSent, bytesCount), tags = eventTags)
         }
-        meterRegistry?.counter("${metersPrefix}-sent-bytes", metersTags)
+        meterRegistry?.counter("${meterPrefix}-sent-bytes", metersTags)
             ?.increment(bytesCount.toDouble())
         metrics.sentBytes = bytesCount
     }
@@ -86,26 +86,26 @@ internal class UdpMonitoringCollector(
             arrayOf(timeToFailure, throwable),
             tags = eventTags
         )
-        meterRegistry?.counter("${metersPrefix}-sending-failure", metersTags)?.increment()
+        meterRegistry?.counter("${meterPrefix}-sending-failure", metersTags)?.increment()
 
         stepContext.addError(StepError(throwable))
     }
 
     override fun recordSentRequestSuccess() {
         eventsLogger?.info("${eventPrefix}.sent-request", tags = eventTags)
-        meterRegistry?.counter("${metersPrefix}-sent-request", metersTags)
+        meterRegistry?.counter("${meterPrefix}-sent-request", metersTags)
     }
 
     override fun recordSentRequestFailure(throwable: Throwable) {
         eventsLogger?.warn("${eventPrefix}.sending-request-failure", tags = eventTags)
-        meterRegistry?.counter("${metersPrefix}-sending-request-failur", metersTags)
+        meterRegistry?.counter("${meterPrefix}-sending-request-failure", metersTags)
     }
 
     override fun recordReceivingData() {
         val timeToResponse = Duration.ofNanos(System.nanoTime() - sendingStart)
         metrics.timeToFirstByte = timeToResponse
         eventsLogger?.debug("${eventPrefix}.receiving", timeToResponse, tags = eventTags)
-        meterRegistry?.counter("${metersPrefix}-receiving", metersTags)?.increment()
+        meterRegistry?.counter("${meterPrefix}-receiving", metersTags)?.increment()
     }
 
     override fun countReceivedData(bytesCount: Int) {
@@ -121,7 +121,7 @@ internal class UdpMonitoringCollector(
             arrayOf(timeToCompleteResponse, receivedBytesCount),
             tags = eventTags
         )
-        meterRegistry?.counter("${metersPrefix}-received", metersTags)
+        meterRegistry?.counter("${meterPrefix}-received", metersTags)
             ?.increment(receivedBytesCount.toDouble())
     }
 
@@ -133,7 +133,7 @@ internal class UdpMonitoringCollector(
             arrayOf(timeToFailure, throwable),
             tags = eventTags
         )
-        meterRegistry?.counter("${metersPrefix}-receiving-failure", metersTags)?.increment()
+        meterRegistry?.counter("${meterPrefix}-receiving-failure", metersTags)?.increment()
     }
 
     fun <IN> toResult(input: IN, response: ByteArray?, failure: Throwable?) = UdpResult(

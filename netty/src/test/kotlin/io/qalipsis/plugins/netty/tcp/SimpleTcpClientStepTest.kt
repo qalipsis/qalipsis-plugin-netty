@@ -198,7 +198,7 @@ internal class SimpleTcpClientStepTest {
             prop("meterRegistry").isSameAs(meterRegistry)
             prop("stepContext").isSameAs(ctx)
             prop("eventPrefix").isEqualTo("netty.tcp")
-            prop("metersPrefix").isEqualTo("netty-tcp")
+            prop("meterPrefix").isEqualTo("netty-tcp")
         }
         val resultCaptor = slot<ConnectionAndRequestResult<String, ByteArray>>()
         coVerify { ctx.send(capture(resultCaptor)) }

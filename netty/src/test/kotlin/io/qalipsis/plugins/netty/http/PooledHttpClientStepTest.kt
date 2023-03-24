@@ -159,7 +159,7 @@ internal class PooledHttpClientStepTest {
                 prop("eventsLogger").isSameAs(eventsLogger)
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.http")
-                prop("metersPrefix").isEqualTo("netty-http")
+                prop("meterPrefix").isEqualTo("netty-http")
                 prop("eventsTags").isSameAs(eventsTags)
                 prop("metersTags").isSameAs(meterTags)
             }
