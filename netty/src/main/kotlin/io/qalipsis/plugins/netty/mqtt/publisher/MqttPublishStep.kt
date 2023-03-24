@@ -77,7 +77,7 @@ internal class MqttPublishStep<I>(
         val input = context.receive()
 
         val recordsToSend = recordsFactory(context, input)
-        var recordsCount = recordsToSend.size
+        val recordsCount = recordsToSend.size
         var valueBytesCount = 0
 
         eventsLogger?.debug("${eventPrefix}.sending-records", recordsToSend.size, tags = context.toEventTags())

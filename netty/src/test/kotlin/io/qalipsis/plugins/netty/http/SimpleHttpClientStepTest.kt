@@ -242,7 +242,7 @@ internal class SimpleHttpClientStepTest {
             prop("meterRegistry").isSameAs(meterRegistry)
             prop("stepContext").isSameAs(ctx)
             prop("eventPrefix").isEqualTo("netty.http")
-            prop("metersPrefix").isEqualTo("netty-http")
+            prop("meterPrefix").isEqualTo("netty-http")
         }
         val resultCaptor = slot<ConnectionAndRequestResult<String, QalipsisHttpResponse<String>>>()
         coVerify { ctx.send(capture(resultCaptor)) }
@@ -269,7 +269,7 @@ internal class SimpleHttpClientStepTest {
         )
 
         // when
-        val exception = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+        val exception = assertThrows<IllegalArgumentException> {
             step.execute(relaxedMockk(), relaxedMockk(), "INPUT", relaxedMockk())
         }
 
@@ -318,7 +318,7 @@ internal class SimpleHttpClientStepTest {
             }
 
             // when
-            org.junit.jupiter.api.assertThrows<RuntimeException> {
+            assertThrows<RuntimeException> {
                 step.execute(relaxedMockk(), ctx, "INPUT", request)
             }
 
@@ -369,7 +369,7 @@ internal class SimpleHttpClientStepTest {
             step.setProperty("running", true)
 
             // when
-            org.junit.jupiter.api.assertThrows<RuntimeException> {
+            assertThrows<RuntimeException> {
                 step.execute(monitoringCollector, ctx, input, request)
             }
 
