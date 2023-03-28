@@ -76,8 +76,8 @@ internal class MqttPublishStepTest {
         val sentBytesMock = relaxedMockk<Counter> { }
         val metersTags = relaxedMockk<Tags>()
         val meterRegistry = relaxedMockk<CampaignMeterRegistry> {
-            every { counter("mqtt-publish-sent-records", refEq(metersTags)) } returns recordsCountMock
-            every { counter("mqtt-publish-sent-value-bytes", refEq(metersTags)) } returns sentBytesMock
+            every { counter("netty-mqtt-publish-sent-records", refEq(metersTags)) } returns recordsCountMock
+            every { counter("netty-mqtt-publish-sent-value-bytes", refEq(metersTags)) } returns sentBytesMock
         }
 
         val startStopContext = relaxedMockk<StepStartStopContext> {

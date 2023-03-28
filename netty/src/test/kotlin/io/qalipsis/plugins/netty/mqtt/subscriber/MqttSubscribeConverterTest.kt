@@ -131,8 +131,8 @@ internal class MqttSubscribeConverterTest{
         var meterRegistry: CampaignMeterRegistry? = null
         if(enableMonitoring == true) {
             meterRegistry = relaxedMockk {
-                every { counter("mqtt-subscribe-consumed-records", refEq(metersTags)) } returns recordsCounter
-                every { counter("mqtt-subscribe-consumed-value-bytes", refEq(metersTags)) } returns valueBytesCounter
+                every { counter("netty-mqtt-subscribe-consumed-records", refEq(metersTags)) } returns recordsCounter
+                every { counter("netty-mqtt-subscribe-consumed-value-bytes", refEq(metersTags)) } returns valueBytesCounter
             }
         }
         val startStopContext = relaxedMockk<StepStartStopContext> {

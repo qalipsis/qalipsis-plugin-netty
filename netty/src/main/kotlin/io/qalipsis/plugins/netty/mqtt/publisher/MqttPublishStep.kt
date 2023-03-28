@@ -55,9 +55,9 @@ internal class MqttPublishStep<I>(
 
     private lateinit var eventLoopGroup: EventLoopGroup
 
-    private val meterPrefix = "mqtt-publish"
+    private val meterPrefix = "netty-mqtt-publish"
 
-    private val eventPrefix = "mqtt.publish"
+    private val eventPrefix = "netty.mqtt.publish"
 
     private var recordsCounter: Counter? = null
 

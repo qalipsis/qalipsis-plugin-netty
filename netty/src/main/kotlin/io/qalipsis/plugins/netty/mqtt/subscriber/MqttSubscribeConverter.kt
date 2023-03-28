@@ -41,9 +41,9 @@ internal class MqttSubscribeConverter<V>(
     private val eventsLogger: EventsLogger?
 ) : DatasourceObjectConverter<MqttPublishMessage, MqttSubscribeRecord<V>> {
 
-    private val meterPrefix = "mqtt-subscribe-consumed"
+    private val meterPrefix = "netty-mqtt-subscribe-consumed"
 
-    private val eventPrefix = "mqtt.subscribe.consumed"
+    private val eventPrefix = "netty.mqtt.subscribe.consumed"
 
     private var recordsCounter: Counter? = null
 
