@@ -17,6 +17,8 @@
 rootProject.name = "qalipsis-plugins-netty"
 
 include(
-    "netty"
+    "qalipsis-plugin-netty"
 )
+
+project(":qalipsis-plugin-netty").projectDir = File(rootDir, "netty")
 
