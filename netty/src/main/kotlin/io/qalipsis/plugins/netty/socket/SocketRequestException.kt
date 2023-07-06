@@ -16,11 +16,11 @@
 
 package io.qalipsis.plugins.netty.socket
 
-import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
+import io.qalipsis.plugins.netty.RequestResult
 
 /**
- * Exception of a step using a TCP connection and containing the full details.
+ * Exception of a step using a TCP connection and containing the details of the query and failures.
  *
  * @author Eric Jessé
  */
-class SocketStepException(val result: ConnectionAndRequestResult<*, *>) : RuntimeException(result.cause)
+data class SocketRequestException(val result: RequestResult<*, *, *>) : RuntimeException(result.cause)

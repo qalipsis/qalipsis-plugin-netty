@@ -34,8 +34,8 @@ import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
-import io.qalipsis.plugins.netty.socket.SocketStepException
-import io.qalipsis.plugins.netty.socket.SocketStepRequestException
+import io.qalipsis.plugins.netty.socket.SocketException
+import io.qalipsis.plugins.netty.socket.SocketRequestException
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
@@ -154,9 +154,9 @@ internal class QueryTcpClientStepTest {
                     eq("This is a test"),
                     refEq(request)
                 )
-            } throws SocketStepException(tcpResult)
+            } throws SocketException(tcpResult)
 
-            val result = assertThrows<SocketStepRequestException> {
+            val result = assertThrows<SocketRequestException> {
                 step.execute(ctx)
             }.result
 

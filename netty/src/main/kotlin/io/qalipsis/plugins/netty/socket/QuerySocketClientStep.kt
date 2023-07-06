@@ -58,10 +58,10 @@ internal abstract class QuerySocketClientStep<I, O : Any, REQ : Any, RES : Any, 
                 connectionOwner.execute(monitoringCollector, context, input, requestFactory(context, input))
             }
             context.send(monitoringCollector.toResult(input, convertResponseToOutput(result), null))
-        } catch (e: SocketStepRequestException) {
+        } catch (e: SocketRequestException) {
             throw e
-        } catch (e: SocketStepException) {
-            throw SocketStepRequestException(
+        } catch (e: SocketException) {
+            throw SocketRequestException(
                 RequestResult(
                     e.result.sendingFailure,
                     e.result.failure,
@@ -71,7 +71,7 @@ internal abstract class QuerySocketClientStep<I, O : Any, REQ : Any, RES : Any, 
                 )
             )
         } catch (e: Exception) {
-            throw SocketStepRequestException(
+            throw SocketRequestException(
                 RequestResult(
                     monitoringCollector.sendingFailure,
                     e.takeUnless { it == monitoringCollector.sendingFailure },

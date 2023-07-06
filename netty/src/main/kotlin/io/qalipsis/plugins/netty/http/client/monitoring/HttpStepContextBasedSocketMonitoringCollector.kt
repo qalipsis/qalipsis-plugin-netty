@@ -21,6 +21,8 @@ import io.netty.handler.codec.http.HttpResponseStatus
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.report.ReportMessageSeverity
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 
 /**
@@ -44,7 +46,15 @@ internal class HttpStepContextBasedSocketMonitoringCollector(
             tags = eventTags
         )
         meterRegistry?.counter("${meterPrefix}-http-status", metersTags + Tag.of("status", status.code().toString()))
-            ?.increment()
+            ?.report {
+                display(
+                    "status ${status.code()}: %,.0f",
+                    ReportMessageSeverity.INFO,
+                    row = 4,
+                    column = 0,
+                    Counter::count
+                )
+            }?.increment()
     }
 
 }

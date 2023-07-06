@@ -61,8 +61,6 @@ internal class MqttSubscribeConverter<V>(
     }
     override fun stop(context: StepStartStopContext) {
         meterRegistry?.apply {
-            remove(recordsCounter!!)
-            remove(valueBytesCounter!!)
             recordsCounter = null
             valueBytesCounter = null
         }
