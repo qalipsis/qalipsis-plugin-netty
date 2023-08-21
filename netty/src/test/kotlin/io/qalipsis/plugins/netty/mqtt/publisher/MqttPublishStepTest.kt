@@ -17,8 +17,6 @@
 package io.qalipsis.plugins.netty.mqtt.publisher
 
 import io.aerisconsulting.catadioptre.setProperty
-import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.Tags
 import io.mockk.coEvery
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -29,6 +27,8 @@ import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Meter
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.mqtt.MqttClient
 import io.qalipsis.plugins.netty.mqtt.MqttClientOptions
@@ -74,14 +74,31 @@ internal class MqttPublishStepTest {
         coEvery { recordsFactory.invoke(any(), any()) } returns listOf(MqttPublishRecord("payload", "test"))
         val recordsCountMock = relaxedMockk<Counter> { }
         val sentBytesMock = relaxedMockk<Counter> { }
-        val metersTags = relaxedMockk<Tags>()
-        val meterRegistry = relaxedMockk<CampaignMeterRegistry> {
-            every { counter("netty-mqtt-publish-sent-records", refEq(metersTags)) } returns recordsCountMock
-            every { counter("netty-mqtt-publish-sent-value-bytes", refEq(metersTags)) } returns sentBytesMock
-        }
-
         val startStopContext = relaxedMockk<StepStartStopContext> {
-            every { toMetersTags() } returns metersTags
+            every { toEventTags() } returns emptyMap()
+            every { scenarioName } returns "scenario-name"
+            every { stepName } returns "step-name"
+        }
+        val tags: Map<String, String> = startStopContext.toEventTags()
+        val meterRegistry = relaxedMockk<CampaignMeterRegistry> {
+            every {
+                counter(
+                    "scenario-name",
+                    "step-name",
+                    "netty-mqtt-publish-sent-records",
+                    refEq(tags)
+                )
+            } returns recordsCountMock
+            every { recordsCountMock.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>()) } returns recordsCountMock
+            every {
+                counter(
+                    "scenario-name",
+                    "step-name",
+                    "netty-mqtt-publish-sent-value-bytes",
+                    refEq(tags)
+                )
+            } returns sentBytesMock
+            every { sentBytesMock.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>()) } returns sentBytesMock
         }
         val mqttPublishStep =
             MqttPublishStep(
@@ -101,7 +118,9 @@ internal class MqttPublishStepTest {
 
         verify {
             recordsCountMock.increment(1.0)
+            recordsCountMock.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>())
             sentBytesMock.increment(eq("payload".toByteArray().size.toDouble()))
+            sentBytesMock.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>())
         }
 
         confirmVerified(recordsCountMock, sentBytesMock)

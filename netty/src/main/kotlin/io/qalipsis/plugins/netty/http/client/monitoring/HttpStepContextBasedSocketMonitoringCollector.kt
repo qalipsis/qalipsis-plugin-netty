@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.http.client.monitoring
 
-import io.micrometer.core.instrument.Tag
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
@@ -36,6 +35,10 @@ internal class HttpStepContextBasedSocketMonitoringCollector(
     stepContext, eventsLogger, meterRegistry, "http"
 ) {
 
+    private val scenarioName = stepContext.scenarioName
+
+    private val stepName = stepContext.stepName
+
     /**
      * Records the status of the HTTP response.
      */
@@ -43,18 +46,18 @@ internal class HttpStepContextBasedSocketMonitoringCollector(
         eventsLogger?.info(
             "${eventPrefix}.http-status",
             status.code(),
-            tags = eventTags
+            tags = tags
         )
-        meterRegistry?.counter("${meterPrefix}-http-status", metersTags + Tag.of("status", status.code().toString()))
-            ?.report {
-                display(
-                    "status ${status.code()}: %,.0f",
-                    ReportMessageSeverity.INFO,
-                    row = 4,
-                    column = 0,
-                    Counter::count
-                )
-            }?.increment()
+        tags["status"] = status.code().toString()
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-http-status", tags)?.report {
+            display(
+                "status ${status.code()}: %,.0f",
+                ReportMessageSeverity.INFO,
+                row = 4,
+                column = 0,
+                Counter::count
+            )
+        }?.increment()
     }
 
 }

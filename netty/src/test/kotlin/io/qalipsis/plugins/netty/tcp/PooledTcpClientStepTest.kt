@@ -18,13 +18,20 @@ package io.qalipsis.plugins.netty.tcp
 
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
+import assertk.assertions.isNotSameAs
+import assertk.assertions.isSameAs
+import assertk.assertions.prop
 import io.aerisconsulting.catadioptre.getProperty
 import io.aerisconsulting.catadioptre.setProperty
-import io.micrometer.core.instrument.Tags
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.impl.annotations.SpyK
+import io.mockk.slot
+import io.mockk.spyk
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepStartStopContext
@@ -100,11 +107,9 @@ internal class PooledTcpClientStepTest {
                     }
                 }
             }
-            val eventsTags1 = relaxedMockk<Map<String, String>>()
-            val meterTags1 = relaxedMockk<Tags>()
+            val tags = relaxedMockk<Map<String, String>>()
             val startStopContext1 = relaxedMockk<StepStartStopContext> {
-                every { toEventTags() } returns eventsTags1
-                every { toMetersTags() } returns meterTags1
+                every { toEventTags() } returns tags
             }
             every { workerGroupSupplier.getGroup() } returns workerGroup
 
@@ -119,8 +124,7 @@ internal class PooledTcpClientStepTest {
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.tcp")
                 prop("meterPrefix").isEqualTo("netty-tcp")
-                prop("eventsTags").isSameAs(eventsTags1)
-                prop("metersTags").isSameAs(meterTags1)
+                prop("tags").isSameAs(tags)
             }
             assertThat(step).prop("workerGroup").isSameAs(workerGroup)
 
@@ -136,11 +140,9 @@ internal class PooledTcpClientStepTest {
             }
 
             // when
-            val eventsTags2 = relaxedMockk<Map<String, String>>()
-            val meterTags2 = relaxedMockk<Tags>()
+            val tags2 = relaxedMockk<Map<String, String>>()
             val startStopContext2 = relaxedMockk<StepStartStopContext> {
-                every { toEventTags() } returns eventsTags2
-                every { toMetersTags() } returns meterTags2
+                every { toEventTags() } returns tags2
             }
             step.start(startStopContext2)
             assertThat(createdClientsCount.get()).isEqualTo(20)
@@ -156,8 +158,7 @@ internal class PooledTcpClientStepTest {
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.tcp")
                 prop("meterPrefix").isEqualTo("netty-tcp")
-                prop("eventsTags").isSameAs(eventsTags2)
-                prop("metersTags").isSameAs(meterTags2)
+                prop("tags").isSameAs(tags2)
             }
         }
 

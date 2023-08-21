@@ -43,20 +43,36 @@ internal class StepBasedTcpMonitoringCollector(
 
     private val meterPrefix = "netty-${stepQualifier}"
 
-    private val eventsTags = context.toEventTags()
+    private val tags = context.toEventTags()
 
-    private val metersTags = context.toMetersTags()
+    private val scenarioName = context.scenarioName
+
+    private val stepName = context.stepName
+
+    private val connectingCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-connecting", tags)
+
+    private val connectedTimer = meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connected", tags)
+
+    private val connectionFailureTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connection-failure", tags)
+
+    private val tlsConnectedTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-connected", tags)
+
+    private val tlsConnectionFailureTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-failure", tags)
 
     override fun recordConnecting() {
-        eventsLogger?.info("${eventPrefix}.connecting", tags = eventsTags)
-        meterRegistry?.counter("${meterPrefix}-connecting", metersTags)?.report {
+        eventsLogger?.info("${eventPrefix}.connecting", tags = tags)
+        connectingCounter?.report {
             display("conn. attempts: %,.0f", ReportMessageSeverity.INFO) { count() }
         }?.increment()
     }
 
     override fun recordConnected(timeToConnect: Duration) {
-        eventsLogger?.info("${eventPrefix}.connected", timeToConnect, tags = eventsTags)
-        meterRegistry?.timer("${meterPrefix}-connected", metersTags)?.report {
+        eventsLogger?.info("${eventPrefix}.connected", timeToConnect, tags = tags)
+        connectedTimer?.report {
             display(
                 "\u2713 %,.0f",
                 severity = ReportMessageSeverity.INFO,
@@ -84,9 +100,9 @@ internal class StepBasedTcpMonitoringCollector(
         eventsLogger?.warn(
             "${eventPrefix}.connection-failure",
             arrayOf(timeToFailure, throwable),
-            tags = eventsTags
+            tags = tags
         )
-        meterRegistry?.timer("${meterPrefix}-connection-failure", metersTags)?.report {
+        connectionFailureTimer?.report {
             display(
                 "\u2716 %,.0f",
                 severity = ReportMessageSeverity.ERROR,
@@ -98,8 +114,8 @@ internal class StepBasedTcpMonitoringCollector(
     }
 
     override fun recordTlsHandshakeSuccess(timeToConnect: Duration) {
-        eventsLogger?.info("${eventPrefix}.tls-connected", timeToConnect, tags = eventsTags)
-        meterRegistry?.timer("${meterPrefix}-tls-connected", metersTags)?.report {
+        eventsLogger?.info("${eventPrefix}.tls-connected", timeToConnect, tags = tags)
+        tlsConnectedTimer?.report {
             display(
                 "TLS: \u2713 %,.0f successes",
                 severity = ReportMessageSeverity.INFO,
@@ -127,9 +143,9 @@ internal class StepBasedTcpMonitoringCollector(
         eventsLogger?.warn(
             "${eventPrefix}.tls-connection-failure",
             arrayOf(timeToFailure, throwable),
-            tags = eventsTags
+            tags = tags
         )
-        meterRegistry?.timer("${meterPrefix}-tls-failure", metersTags)?.report {
+        tlsConnectionFailureTimer?.report {
             display(
                 "\u2716 %,.0f failures",
                 severity = ReportMessageSeverity.ERROR,

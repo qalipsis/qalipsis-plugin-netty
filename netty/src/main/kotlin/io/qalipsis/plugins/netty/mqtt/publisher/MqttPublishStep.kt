@@ -16,13 +16,14 @@
 
 package io.qalipsis.plugins.netty.mqtt.publisher
 
-import io.micrometer.core.instrument.Counter
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepName
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.report.ReportMessageSeverity
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
@@ -64,30 +65,47 @@ internal class MqttPublishStep<I>(
     private var valueBytesCounter: Counter? = null
 
     override suspend fun start(context: StepStartStopContext) {
+        val tags = context.toEventTags()
+        val scenarioName = context.scenarioName
+        val stepName = context.stepName
         meterRegistry?.apply {
-            val tags = context.toMetersTags()
-            recordsCounter = counter("$meterPrefix-sent-records", tags)
-            valueBytesCounter = counter("$meterPrefix-sent-value-bytes", tags)
+            recordsCounter = counter(scenarioName, stepName, "$meterPrefix-sent-records", tags).report {
+                display(
+                    format = "rec attempted: %,.0f",
+                    severity = ReportMessageSeverity.INFO,
+                    row = 0,
+                    column = 0,
+                ) { count() }
+            }
+            valueBytesCounter = counter(scenarioName, stepName, "$meterPrefix-sent-value-bytes", tags).report {
+                display(
+                    format = "rec sent: %,.0f bytes",
+                    severity = ReportMessageSeverity.INFO,
+                    row = 0,
+                    column = 1,
+                ) { count() }
+            }
         }
         eventLoopGroup = eventLoopGroupSupplier.getGroup()
         mqttClient = MqttClient(mqttClientOptions, eventLoopGroup)
     }
 
     override suspend fun execute(context: StepContext<I, MqttPublishResult<I>>) {
+        val tags = context.toEventTags()
         val input = context.receive()
 
         val recordsToSend = recordsFactory(context, input)
         val recordsCount = recordsToSend.size
         var valueBytesCount = 0
 
-        eventsLogger?.debug("${eventPrefix}.sending-records", recordsToSend.size, tags = context.toEventTags())
+        eventsLogger?.debug("${eventPrefix}.sending-records", recordsToSend.size, tags = tags)
         recordsCounter?.increment(recordsToSend.size.toDouble())
         recordsToSend.forEach {
             val payload = it.value.toByteArray()
             valueBytesCount += payload.size
             mqttClient.publish(it.topicName, payload, it.retainedMessage, it.qoS.mqttNativeQoS)
         }
-        eventsLogger?.info("${eventPrefix}.sending.value-bytes", valueBytesCount, tags = context.toEventTags())
+        eventsLogger?.info("${eventPrefix}.sending.value-bytes", valueBytesCount, tags = tags)
         valueBytesCounter?.increment(valueBytesCount.toDouble())
         val mqttPublishMeters = MqttPublishMeters(
             recordsCount = recordsCount,

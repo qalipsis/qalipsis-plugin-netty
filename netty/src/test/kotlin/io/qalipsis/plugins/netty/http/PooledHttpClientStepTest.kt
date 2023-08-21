@@ -31,7 +31,6 @@ import assertk.assertions.prop
 import io.aerisconsulting.catadioptre.coInvokeInvisible
 import io.aerisconsulting.catadioptre.getProperty
 import io.aerisconsulting.catadioptre.setProperty
-import io.micrometer.core.instrument.Tags
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -143,11 +142,9 @@ internal class PooledHttpClientStepTest {
         )
         coEvery { step["createClient"](any<HttpClientConfiguration>(), any<EventLoopGroup>()) } returnsMany clients
 
-        val eventsTags = relaxedMockk<Map<String, String>>()
-        val meterTags = relaxedMockk<Tags>()
+        val tags = relaxedMockk<Map<String, String>>()
         val startStopContext1 = relaxedMockk<StepStartStopContext> {
-            every { toEventTags() } returns eventsTags
-            every { toMetersTags() } returns meterTags
+            every { toEventTags() } returns tags
         }
 
         // when
@@ -160,8 +157,7 @@ internal class PooledHttpClientStepTest {
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.http")
                 prop("meterPrefix").isEqualTo("netty-http")
-                prop("eventsTags").isSameAs(eventsTags)
-                prop("metersTags").isSameAs(meterTags)
+                prop("tags").isSameAs(tags)
             }
             typedProp<MutableMap<SocketClient.RemotePeerIdentifier, Pool<HttpClient>>>("clientsPools").all {
                 hasSize(1)
