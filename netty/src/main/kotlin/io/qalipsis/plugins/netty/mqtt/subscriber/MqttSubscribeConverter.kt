@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.mqtt.subscriber
 
-import io.micrometer.core.instrument.Counter
 import io.netty.buffer.ByteBufUtil
 import io.netty.handler.codec.mqtt.MqttPublishMessage
 import io.qalipsis.api.context.StepOutput
@@ -26,6 +25,8 @@ import io.qalipsis.api.lang.tryAndLogOrNull
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.report.ReportMessageSeverity
 import io.qalipsis.api.steps.datasource.DatasourceObjectConverter
 import java.util.concurrent.atomic.AtomicLong
 
@@ -52,17 +53,33 @@ internal class MqttSubscribeConverter<V>(
     private var valueBytesCounter: Counter? = null
 
     override fun start(context: StepStartStopContext) {
+        val tags = context.toEventTags()
+        val scenarioName = context.scenarioName
+        val stepName = context.stepName
         meterRegistry?.apply {
-            val tags = context.toMetersTags()
-            recordsCounter = counter("$meterPrefix-records", tags)
-            valueBytesCounter = counter("$meterPrefix-value-bytes", tags)
+            recordsCounter = counter(scenarioName, stepName, "$meterPrefix-records", tags).report {
+                display(
+                    format = "received rec: %,.0f",
+                    severity = ReportMessageSeverity.INFO,
+                    row = 0,
+                    column = 0,
+                    Counter::count
+                )
+            }
+            valueBytesCounter = counter(scenarioName, stepName, "$meterPrefix-value-bytes", tags).report {
+                display(
+                    format = "received: %,.0f bytes",
+                    severity = ReportMessageSeverity.INFO,
+                    row = 1,
+                    column = 1,
+                    Counter::count
+                )
+            }
         }
         this.context = context
     }
     override fun stop(context: StepStartStopContext) {
         meterRegistry?.apply {
-            remove(recordsCounter!!)
-            remove(valueBytesCounter!!)
             recordsCounter = null
             valueBytesCounter = null
         }

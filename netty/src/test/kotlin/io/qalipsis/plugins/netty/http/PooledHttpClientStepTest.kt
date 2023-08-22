@@ -31,7 +31,6 @@ import assertk.assertions.prop
 import io.aerisconsulting.catadioptre.coInvokeInvisible
 import io.aerisconsulting.catadioptre.getProperty
 import io.aerisconsulting.catadioptre.setProperty
-import io.micrometer.core.instrument.Tags
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -49,6 +48,8 @@ import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Timer
 import io.qalipsis.api.pool.FixedPool
 import io.qalipsis.api.pool.Pool
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
@@ -73,6 +74,7 @@ import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.mockk.verifyOnce
 import io.qalipsis.test.steps.StepTestHelper
 import kotlinx.coroutines.channels.Channel
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -111,6 +113,31 @@ internal class PooledHttpClientStepTest {
     @RelaxedMockK
     private lateinit var workerGroup: EventLoopGroup
 
+    @BeforeEach
+    fun setUp() {
+        every {
+            meterRegistry.counter(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Counter> {
+            every { report(any()) } returns this
+        }
+        every {
+            meterRegistry.timer(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Timer> {
+            every { report(any()) } returns this
+        }
+    }
+
+
     @Test
     @Timeout(3)
     internal fun `should create the default pool at start`() = testDispatcherProvider.run {
@@ -143,11 +170,9 @@ internal class PooledHttpClientStepTest {
         )
         coEvery { step["createClient"](any<HttpClientConfiguration>(), any<EventLoopGroup>()) } returnsMany clients
 
-        val eventsTags = relaxedMockk<Map<String, String>>()
-        val meterTags = relaxedMockk<Tags>()
+        val tags = relaxedMockk<Map<String, String>>()
         val startStopContext1 = relaxedMockk<StepStartStopContext> {
-            every { toEventTags() } returns eventsTags
-            every { toMetersTags() } returns meterTags
+            every { toEventTags() } returns tags
         }
 
         // when
@@ -160,8 +185,7 @@ internal class PooledHttpClientStepTest {
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.http")
                 prop("meterPrefix").isEqualTo("netty-http")
-                prop("eventsTags").isSameAs(eventsTags)
-                prop("metersTags").isSameAs(meterTags)
+                prop("tags").isSameAs(tags)
             }
             typedProp<MutableMap<SocketClient.RemotePeerIdentifier, Pool<HttpClient>>>("clientsPools").all {
                 hasSize(1)

@@ -43,6 +43,8 @@ import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Timer
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.exceptions.ClosedClientException
@@ -64,6 +66,7 @@ import io.qalipsis.test.steps.StepTestHelper
 import kotlinx.coroutines.channels.Channel
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -94,6 +97,31 @@ internal class SimpleHttpClientStepTest {
 
     @RelaxedMockK
     private lateinit var workerGroup: EventLoopGroup
+
+    @BeforeEach
+    fun setUp() {
+        every {
+            meterRegistry.counter(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Counter> {
+            every { report(any()) } returns this
+        }
+        every {
+            meterRegistry.timer(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Timer> {
+            every { report(any()) } returns this
+        }
+    }
+
 
     @Test
     fun `should change the connection configuration to keep open`() = testDispatcherProvider.runTest {

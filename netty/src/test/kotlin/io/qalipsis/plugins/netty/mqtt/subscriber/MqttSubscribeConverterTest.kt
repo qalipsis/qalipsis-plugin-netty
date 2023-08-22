@@ -22,12 +22,11 @@ import assertk.assertions.hasSize
 import assertk.assertions.index
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
-import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.Tags
 import io.mockk.coEvery
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.verify
+import io.mockk.verifyOrder
 import io.netty.buffer.ByteBufUtil
 import io.netty.buffer.Unpooled
 import io.netty.handler.codec.mqtt.MqttFixedHeader
@@ -39,12 +38,13 @@ import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.messaging.deserializer.MessageDeserializer
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Meter
 import io.qalipsis.plugins.netty.mqtt.spec.MqttQoS
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.CleanMockkRecordedCalls
 import io.qalipsis.test.mockk.relaxedMockk
-import io.qalipsis.test.mockk.verifyExactly
 import kotlinx.coroutines.channels.Channel
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -55,7 +55,7 @@ import java.util.concurrent.atomic.AtomicLong
  * @author Gabriel Moraes
  */
 @CleanMockkRecordedCalls
-internal class MqttSubscribeConverterTest{
+internal class MqttSubscribeConverterTest {
 
     @JvmField
     @RegisterExtension
@@ -65,9 +65,9 @@ internal class MqttSubscribeConverterTest{
         every { deserialize(any()) } answers { firstArg<ByteArray>().decodeToString() }
     }
 
-    private val recordsCounter: Counter = relaxedMockk {}
+    private val recordsCounter = relaxedMockk<Counter>()
 
-    private val valueBytesCounter: Counter = relaxedMockk {}
+    private val valueBytesCounter = relaxedMockk<Counter>()
 
     private val eventsLogger = relaxedMockk<EventsLogger>()
 
@@ -82,9 +82,10 @@ internal class MqttSubscribeConverterTest{
     @Test
     @Timeout(2)
     fun `should deserialize and count the values bytes`() = testDispatcherProvider.runTest {
-        executeConversion(consumedValueBytesCounter = valueBytesCounter, enableMonitoring = true)
+        executeConversion(enableMonitoring = true)
 
-        verify {
+        verifyOrder {
+            valueBytesCounter.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>())
             valueBytesCounter.increment(7.0)
             valueBytesCounter.increment(8.0)
             valueBytesCounter.increment(8.0)
@@ -96,20 +97,19 @@ internal class MqttSubscribeConverterTest{
     @Test
     @Timeout(2)
     fun `should deserialize and count the records`() = testDispatcherProvider.runTest {
-        executeConversion(consumedRecordsCounter = recordsCounter, enableMonitoring = true)
+        executeConversion(enableMonitoring = true)
 
-        verifyExactly(3) {
+        verifyOrder {
+            recordsCounter.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>())
+            recordsCounter.increment()
+            recordsCounter.increment()
             recordsCounter.increment()
         }
 
         confirmVerified(recordsCounter, valueSerializer)
     }
 
-    private suspend fun executeConversion(
-        consumedValueBytesCounter: Counter? = null,
-        consumedRecordsCounter: Counter? = null,
-        enableMonitoring: Boolean? = null
-    ) {
+    private suspend fun executeConversion(enableMonitoring: Boolean? = null) {
 
         val publishMessage1 = MqttPublishMessage(
             MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_LEAST_ONCE.mqttNativeQoS, true, 0),
@@ -126,17 +126,34 @@ internal class MqttSubscribeConverterTest{
             MqttPublishVariableHeader("test", 3, MqttProperties()),
             Unpooled.buffer().writeBytes("message3".toByteArray())
         )
-
-        val metersTags = relaxedMockk<Tags>()
         var meterRegistry: CampaignMeterRegistry? = null
-        if(enableMonitoring == true) {
-            meterRegistry = relaxedMockk {
-                every { counter("netty-mqtt-subscribe-consumed-records", refEq(metersTags)) } returns recordsCounter
-                every { counter("netty-mqtt-subscribe-consumed-value-bytes", refEq(metersTags)) } returns valueBytesCounter
-            }
-        }
         val startStopContext = relaxedMockk<StepStartStopContext> {
-            every { toMetersTags() } returns metersTags
+            every { toEventTags() } returns emptyMap()
+            every { scenarioName } returns "scenario-name"
+            every { stepName } returns "step-name"
+        }
+        if (enableMonitoring == true) {
+            val tags: Map<String, String> = startStopContext.toEventTags()
+            meterRegistry = relaxedMockk<CampaignMeterRegistry> {
+                every {
+                    counter(
+                        "scenario-name",
+                        "step-name",
+                        "netty-mqtt-subscribe-consumed-records",
+                        refEq(tags)
+                    )
+                } returns recordsCounter
+                every { recordsCounter.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>()) } returns recordsCounter
+                every {
+                    counter(
+                        "scenario-name",
+                        "step-name",
+                        "netty-mqtt-subscribe-consumed-value-bytes",
+                        refEq(tags)
+                    )
+                } returns valueBytesCounter
+                every { valueBytesCounter.report(any<Meter.ReportingConfiguration<Counter>.() -> Unit>()) } returns valueBytesCounter
+            }
         }
 
         val converter = MqttSubscribeConverter(
@@ -148,9 +165,18 @@ internal class MqttSubscribeConverterTest{
         converter.start(startStopContext)
         // when
         val channel = Channel<MqttSubscribeRecord<String>>(3)
-        converter.supply(AtomicLong(120), publishMessage1, relaxedMockk { coEvery { send(any()) } coAnswers { channel.send(firstArg()) } })
-        converter.supply(AtomicLong(121), publishMessage2, relaxedMockk { coEvery { send(any()) } coAnswers { channel.send(firstArg()) } })
-        converter.supply(AtomicLong(122), publishMessage3, relaxedMockk { coEvery { send(any()) } coAnswers { channel.send(firstArg()) } })
+        converter.supply(
+            AtomicLong(120),
+            publishMessage1,
+            relaxedMockk { coEvery { send(any()) } coAnswers { channel.send(firstArg()) } })
+        converter.supply(
+            AtomicLong(121),
+            publishMessage2,
+            relaxedMockk { coEvery { send(any()) } coAnswers { channel.send(firstArg()) } })
+        converter.supply(
+            AtomicLong(122),
+            publishMessage3,
+            relaxedMockk { coEvery { send(any()) } coAnswers { channel.send(firstArg()) } })
 
         // receives messages converted sent in the output channel.
         val results = listOf(channel.receive(), channel.receive(), channel.receive())

@@ -28,6 +28,8 @@ import io.mockk.spyk
 import io.netty.handler.codec.http.HttpMethod
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Timer
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.http.client.HttpClient
@@ -42,6 +44,7 @@ import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.mockk.verifyNever
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -65,6 +68,30 @@ internal class PooledHttpClientStepIntegrationTest {
 
     @RelaxedMockK
     private lateinit var workerGroupSupplier: EventLoopGroupSupplier
+
+    @BeforeEach
+    fun setUp() {
+        every {
+            meterRegistry.counter(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Counter> {
+            every { report(any()) } returns this
+        }
+        every {
+            meterRegistry.timer(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Timer> {
+            every { report(any()) } returns this
+        }
+    }
 
     @Test
     @Timeout(5)

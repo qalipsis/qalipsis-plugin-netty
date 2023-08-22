@@ -18,11 +18,26 @@ package io.qalipsis.plugins.netty.http.client
 
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.hasSize
+import assertk.assertions.index
+import assertk.assertions.isBetween
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isGreaterThan
+import assertk.assertions.isLessThan
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
+import assertk.assertions.isSameAs
+import assertk.assertions.isTrue
+import assertk.assertions.key
+import assertk.assertions.prop
+import assertk.assertions.startsWith
 import com.google.common.io.Files
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.spyk
 import io.netty.handler.codec.http.HttpContent
@@ -36,6 +51,8 @@ import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Timer
 import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.configuration.TlsConfiguration
 import io.qalipsis.plugins.netty.http.client.monitoring.HttpStepContextBasedSocketMonitoringCollector
@@ -51,10 +68,12 @@ import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.coVerifyNever
 import io.qalipsis.test.mockk.coVerifyOnce
+import io.qalipsis.test.mockk.relaxedMockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
@@ -99,6 +118,30 @@ internal class Http2ClientIntegrationTest {
     private val workerGroup = NativeTransportUtils.getEventLoopGroup()
 
     private val toRelease = mutableListOf<Any>()
+
+    @BeforeEach
+    fun setUp() {
+        every {
+            meterRegistry.counter(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Counter> {
+            every { report(any()) } returns this
+        }
+        every {
+            meterRegistry.timer(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Timer> {
+            every { report(any()) } returns this
+        }
+    }
 
     @AfterEach
     internal fun tearDown() = testDispatcherProvider.run {

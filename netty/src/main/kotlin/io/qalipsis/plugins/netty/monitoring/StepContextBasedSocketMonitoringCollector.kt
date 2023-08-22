@@ -16,14 +16,17 @@
 
 package io.qalipsis.plugins.netty.monitoring
 
-import io.micrometer.core.instrument.Tag
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.lang.concurrentList
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Timer
+import io.qalipsis.api.report.ReportMessageSeverity
 import io.qalipsis.plugins.netty.socket.SocketMonitoringCollector
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 internal open class StepContextBasedSocketMonitoringCollector(
@@ -54,28 +57,164 @@ internal open class StepContextBasedSocketMonitoringCollector(
 
     protected val meterPrefix = "netty-${stepQualifier}"
 
-    protected val eventTags = stepContext.toEventTags().toMutableMap()
+    protected val tags = stepContext.toEventTags().toMutableMap()
 
-    protected var metersTags = stepContext.toMetersTags()
+    private val scenarioName = stepContext.scenarioName
+
+    private val stepName = stepContext.stepName
+
+    private val connectingCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-connecting", tags)?.report {
+            display("conn. attempts: %,.0f", ReportMessageSeverity.INFO) { count() }
+        }
+
+    private val connectedTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connected", tags)?.report {
+            display(
+                "\u2713 %,.0f",
+                severity = ReportMessageSeverity.INFO,
+                row = 0,
+                column = 1,
+                Timer::count
+            )
+            display(
+                "mean: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 0,
+                column = 2
+            ) { this.mean(TimeUnit.MILLISECONDS) }
+            display(
+                "max: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 0,
+                column = 3
+            ) { this.max(TimeUnit.MILLISECONDS) }
+    }
+
+    private val connectionFailureTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connection-failure", tags)?.report {
+            display(
+                "\u2716 %,.0f",
+                severity = ReportMessageSeverity.ERROR,
+                row = 0,
+                column = 4,
+                Timer::count
+            )
+        }
+
+    private val tlsConnectedTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-connected", tags)?.report {
+            display(
+                "TLS: \u2713 %,.0f successes",
+                severity = ReportMessageSeverity.INFO,
+                row = 1,
+                column = 0,
+                Timer::count
+            )
+            display(
+                "mean: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 1,
+                column = 1
+            ) { this.mean(TimeUnit.MILLISECONDS) }
+            display(
+                "max: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 1,
+                column = 2
+            ) { this.max(TimeUnit.MILLISECONDS) }
+        }
+
+    private val tlsConnectionFailureTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-failure", tags)?.report {
+            display(
+                "\u2716 %,.0f failures",
+                severity = ReportMessageSeverity.ERROR,
+                row = 1,
+                column = 3,
+                Timer::count
+            )
+        }
+
+    private val sendingRequestCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-request", tags)?.report {
+            display("\u2197 %,.0f req", ReportMessageSeverity.INFO, row = 2, column = 0, Counter::count)
+        }
+
+    private val sendingBytesCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-bytes", tags)?.report {
+            display("%,.0f bytes", ReportMessageSeverity.INFO, row = 2, column = 1, Counter::count)
+        }
+
+    private val sentRequestCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sent-request", tags)?.report {
+            display("\u2713 %,.0f req", ReportMessageSeverity.INFO, row = 2, column = 2, Counter::count)
+        }
+
+    private val sentBytesCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sent-bytes", tags)?.report {
+            display("\u2713 %,.0f bytes", ReportMessageSeverity.INFO, row = 2, column = 3, Counter::count)
+        }
+
+    private val sendingRequestFailureCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-request-failure", tags)?.report {
+            display("\u2716 %,.0f req", ReportMessageSeverity.ERROR, row = 2, column = 5, Counter::count)
+        }
+
+    private val sendingBytesFailureCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-failure", tags)
+
+    private val receivingDataTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-receiving", tags)?.report {
+            display(
+                "\u2198 1st byte mean: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 3,
+                column = 0
+            ) { this.mean(TimeUnit.MILLISECONDS) }
+            display(
+                "max: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 3,
+                column = 1
+            ) { this.max(TimeUnit.MILLISECONDS) }
+        }
+
+    private val receivedDataTimer =
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-received-response", tags)?.report {
+            display(
+                "last byte mean: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 3,
+                column = 2
+            ) { this.mean(TimeUnit.MILLISECONDS) }
+            display(
+                "max: %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 3,
+                column = 3
+            ) { this.max(TimeUnit.MILLISECONDS) }
+        }
+
+    private val receivingDataFailureCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-receiving-failure", tags)
 
     fun setTags(vararg tags: Pair<String, String>) {
-        eventTags.clear()
-        eventTags.putAll(stepContext.toEventTags())
-        eventTags.putAll(tags)
-
-        metersTags = stepContext.toMetersTags().and(tags.map { (key, value) -> Tag.of(key, value) })
+        this.tags.clear()
+        this.tags.putAll(stepContext.toEventTags())
+        this.tags.putAll(tags)
     }
 
     override fun recordConnecting() {
-        eventsLogger?.info("${eventPrefix}.connecting", tags = eventTags)
-        meterRegistry?.counter("${meterPrefix}-connecting", metersTags)?.increment()
+        eventsLogger?.info("${eventPrefix}.connecting", tags = tags)
+        connectingCounter?.increment()
     }
 
     override fun recordConnected(timeToConnect: Duration) {
         connected = true
         meters.timeToSuccessfulConnect = timeToConnect
-        eventsLogger?.info("${eventPrefix}.connected", timeToConnect, tags = eventTags)
-        meterRegistry?.counter("${meterPrefix}-connected", metersTags)?.increment()
+        eventsLogger?.info("${eventPrefix}.connected", timeToConnect, tags = tags)
+        connectedTimer?.record(timeToConnect)
     }
 
     override fun recordConnectionFailure(timeToFailure: Duration, throwable: Throwable) {
@@ -86,17 +225,17 @@ internal open class StepContextBasedSocketMonitoringCollector(
             eventsLogger?.warn(
                 "${eventPrefix}.connection-failure",
                 arrayOf(timeToFailure, throwable),
-                tags = eventTags
+                tags = tags
             )
-            meterRegistry?.counter("${meterPrefix}-connection-failure", metersTags)?.increment()
+            connectionFailureTimer?.record(timeToFailure)
         }
     }
 
     override fun recordTlsHandshakeSuccess(timeToConnect: Duration) {
         connected = true
         meters.timeToSuccessfulTlsConnect = timeToConnect
-        eventsLogger?.info("${eventPrefix}.tls-connected", timeToConnect, tags = eventTags)
-        meterRegistry?.counter("${meterPrefix}-tls-connected", metersTags)?.increment()
+        eventsLogger?.info("${eventPrefix}.tls-connected", timeToConnect, tags = tags)
+        tlsConnectedTimer?.record(timeToConnect)
     }
 
     override fun recordTlsHandshakeFailure(timeToFailure: Duration, throwable: Throwable) {
@@ -104,9 +243,9 @@ internal open class StepContextBasedSocketMonitoringCollector(
             eventsLogger?.warn(
                 "${eventPrefix}.tls-connection-failure",
                 arrayOf(timeToFailure, throwable),
-                tags = eventTags
+                tags = tags
             )
-            meterRegistry?.counter("${meterPrefix}-tls-failure", metersTags)?.increment()
+            tlsConnectionFailureTimer?.record(timeToFailure)
 
             connected = false
             meters.timeToFailedTlsConnect = timeToFailure
@@ -115,8 +254,8 @@ internal open class StepContextBasedSocketMonitoringCollector(
     }
 
     override fun recordSendingRequest() {
-        eventsLogger?.info("${eventPrefix}.sending-request", tags = eventTags)
-        meterRegistry?.counter("${meterPrefix}-sending-request", metersTags)
+        eventsLogger?.info("${eventPrefix}.sending-request", tags = tags)
+        sendingRequestCounter?.increment()
     }
 
     override fun recordSendingData(bytesCount: Int) {
@@ -124,24 +263,27 @@ internal open class StepContextBasedSocketMonitoringCollector(
         sendingInstants.add(now)
         firstSentByteInstant.compareAndSet(0, now)
         if (bytesCount > 0) {
-            eventsLogger?.debug("${eventPrefix}.sending-bytes", bytesCount, tags = eventTags)
+            eventsLogger?.debug("${eventPrefix}.sending-bytes", bytesCount, tags = tags)
         } else {
-            eventsLogger?.trace("${eventPrefix}.sending-bytes", bytesCount, tags = eventTags)
+            eventsLogger?.trace("${eventPrefix}.sending-bytes", bytesCount, tags = tags)
         }
-        meterRegistry?.counter("${meterPrefix}-sending-bytes", metersTags)
-            ?.increment(bytesCount.toDouble())
+        sendingBytesCounter?.increment(bytesCount.toDouble())
         meters.bytesCountToSend += bytesCount
+    }
+
+    override fun recordSentRequestSuccess() {
+        eventsLogger?.info("${eventPrefix}.sent-request", tags = tags)
+        sentRequestCounter?.increment()
     }
 
     override fun recordSentDataSuccess(bytesCount: Int) {
         val timeToSent = Duration.ofNanos(System.nanoTime() - sendingInstants.removeAt(0))
         if (bytesCount > 0) {
-            eventsLogger?.debug("${eventPrefix}.sent-bytes", arrayOf(timeToSent, bytesCount), tags = eventTags)
+            eventsLogger?.debug("${eventPrefix}.sent-bytes", arrayOf(timeToSent, bytesCount), tags = tags)
         } else {
-            eventsLogger?.trace("${eventPrefix}.sent-bytes", arrayOf(timeToSent, bytesCount), tags = eventTags)
+            eventsLogger?.trace("${eventPrefix}.sent-bytes", arrayOf(timeToSent, bytesCount), tags = tags)
         }
-        meterRegistry?.counter("${meterPrefix}-sent-bytes", metersTags)
-            ?.increment(bytesCount.toDouble())
+        sentBytesCounter?.increment(bytesCount.toDouble())
         meters.sentBytes += bytesCount
     }
 
@@ -149,25 +291,20 @@ internal open class StepContextBasedSocketMonitoringCollector(
         val timeToFailure = Duration.ofNanos(System.nanoTime() - firstSentByteInstant.get())
         if (sendingFailure == null) {
             sendingFailure = throwable
-            eventsLogger?.warn("${eventPrefix}.sending.failed", arrayOf(timeToFailure, throwable), tags = eventTags)
-            meterRegistry?.counter("${meterPrefix}-sending-failure", metersTags)?.increment()
+            eventsLogger?.warn("${eventPrefix}.sending.failed", arrayOf(timeToFailure, throwable), tags = tags)
+            sendingBytesFailureCounter?.increment()
         }
     }
 
-    override fun recordSentRequestSuccess() {
-        eventsLogger?.info("${eventPrefix}.sent-request", tags = eventTags)
-        meterRegistry?.counter("${meterPrefix}-sent-request", metersTags)
-    }
-
     override fun recordSentRequestFailure(throwable: Throwable) {
-        eventsLogger?.warn("${eventPrefix}.sending-request-failure", tags = eventTags)
-        meterRegistry?.counter("${meterPrefix}-sending-request-failure", metersTags)
+        eventsLogger?.warn("${eventPrefix}.sending-request-failure", tags = tags)
+        sendingRequestFailureCounter?.increment()
     }
 
     override fun recordReceivingData() {
         meters.timeToFirstByte = Duration.ofNanos(System.nanoTime() - firstSentByteInstant.get())
-        eventsLogger?.debug("${eventPrefix}.receiving", meters.timeToFirstByte, tags = eventTags)
-        meterRegistry?.counter("${meterPrefix}-receiving", metersTags)?.increment()
+        eventsLogger?.debug("${eventPrefix}.receiving", meters.timeToFirstByte, tags = tags)
+        receivingDataTimer?.record(meters.timeToFirstByte!!)
     }
 
     override fun countReceivedData(bytesCount: Int) {
@@ -179,9 +316,9 @@ internal open class StepContextBasedSocketMonitoringCollector(
         eventsLogger?.info(
             "${eventPrefix}.received-response",
             arrayOf(meters.timeToLastByte, meters.receivedBytes),
-            tags = eventTags
+            tags = tags
         )
-        meterRegistry?.counter("${meterPrefix}-received-response", metersTags)?.increment()
+        receivedDataTimer?.record(meters.timeToLastByte!!)
     }
 
     override fun recordReceivingDataFailure(throwable: Throwable) {
@@ -191,9 +328,9 @@ internal open class StepContextBasedSocketMonitoringCollector(
             eventsLogger?.warn(
                 "${eventPrefix}.receiving.failed",
                 arrayOf(timeToFailure, throwable),
-                tags = eventTags
+                tags = tags
             )
-            meterRegistry?.counter("${meterPrefix}-receiving-failure", metersTags)?.increment()
+            receivingDataFailureCounter?.increment()
         }
     }
 

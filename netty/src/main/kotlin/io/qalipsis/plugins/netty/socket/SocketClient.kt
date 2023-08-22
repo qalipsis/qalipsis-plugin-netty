@@ -119,7 +119,10 @@ internal abstract class SocketClient<CONN : SocketClientConfiguration, REQ : Any
             }
         }
 
-        channelFuture = bootstrap.connect().addListener { connectionReadyLatch.blockingDecrement() }
+        channelFuture = bootstrap.connect().addListener {
+            log.trace { "Connection to $remotePeerIdentifier was successfully established" }
+            connectionReadyLatch.blockingDecrement()
+        }
         val timeout = config.connectTimeout.toMillis()
         if (!connectionReadyLatch.await(timeout)) {
             close()
@@ -227,7 +230,7 @@ internal abstract class SocketClient<CONN : SocketClientConfiguration, REQ : Any
     /**
      * Unique identifier for a connection, in order to identify a peer used several times.
      */
-    data class RemotePeerIdentifier constructor(
+    data class RemotePeerIdentifier(
         val address: InetAddress,
         val port: Int
     ) {

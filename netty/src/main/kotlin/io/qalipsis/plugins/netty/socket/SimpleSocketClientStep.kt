@@ -94,16 +94,20 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         running = true
     }
 
-    @Throws(SocketStepException::class)
+    @Throws(SocketException::class)
     override suspend fun execute(context: StepContext<I, ConnectionAndRequestResult<I, O>>) {
+        log.trace { "Creating the monitoring collector" }
         val monitoringCollector = createMonitoringCollector(context)
+        log.trace { "Receiving the input" }
         val input = context.receive()
+        log.trace { "Executing the request" }
         val response = withContext(ioCoroutineContext) {
             execute(monitoringCollector, context, input, requestFactory(context, input))
         }
+        log.trace { "Converting the response into result" }
         val result = monitoringCollector.toResult(input, convertResponseToOutput(response), null)
         if (result.isFailure) {
-            throw SocketStepException(result)
+            throw SocketRequestException(result)
         }
         context.send(result)
     }
@@ -117,7 +121,7 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
     protected open fun createMonitoringCollector(context: StepContext<I, ConnectionAndRequestResult<I, O>>) =
         StepContextBasedSocketMonitoringCollector(context, eventsLogger, meterRegistry, stepQualifier)
 
-    @Throws(SocketStepException::class)
+    @Throws(SocketException::class)
     override suspend fun <IN> execute(
         monitoringCollector: StepContextBasedSocketMonitoringCollector,
         context: StepContext<*, *>, input: IN, request: REQ
@@ -129,7 +133,7 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
      * Executes a request and reads the response from the server.
      * If a client exists and is open, it is reused, otherwise a new one is created.
      */
-    @Throws(SocketStepException::class)
+    @Throws(SocketException::class)
     protected suspend fun <IN> doExecute(
         monitoringCollector: StepContextBasedSocketMonitoringCollector,
         context: StepContext<*, *>, input: IN, request: REQ
@@ -137,6 +141,7 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         require(running) { "The step $name is not running" }
 
         val client = try {
+            log.trace { "Acquiring the semaphore to create or acquire the client for the context $context" }
             minionsSemaphores.computeIfAbsent(context.minionId) { Semaphore(1, 0) }.withPermit {
                 createOrAcquireClient(monitoringCollector, context)
             }
@@ -145,7 +150,7 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
             clientsInUse.remove(context.minionId)
             minionsSemaphores.remove(context.minionId)
 
-            throw e.takeIf { e is SocketStepException } ?: SocketStepException(
+            throw e.takeIf { e is SocketException } ?: SocketConnectionException(
                 monitoringCollector.toResult(input, null, e.takeUnless { monitoringCollector.cause == e })
             )
         }
@@ -155,16 +160,20 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         } catch (e: Exception) {
             client.close()
             // The exception is only considered if not already set in the context.
-            throw e.takeIf { e is SocketStepException } ?: SocketStepException(
+            throw e.takeIf { e is SocketException } ?: SocketException(
                 monitoringCollector.toResult(input, null, e.takeUnless { monitoringCollector.cause === e })
             )
         } finally {
             clientsInUse.remove(context.minionId)
             if (client.isOpen) {
+                log.trace { "Putting the client back to the queue" }
                 clients[context.minionId]?.send(client)
                 if (context.isTail && (!configuration.keepConnectionAlive && client.isExhausted())) {
                     client.close()
                 }
+            } else {
+                log.trace { "Discarding the dirty client" }
+                clients.remove(context.minionId)?.close()
             }
         }
     }
@@ -177,13 +186,16 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         context: StepContext<*, *>
     ): CLI {
         return if (clients.containsKey(context.minionId)) {
-            log.trace { "Reusing the TCP client for minion ${context.minionId}" }
+            log.trace { "Reusing the client for the context $context" }
             // Reuse the client if it exists for the same minion.
             acquireClient(context.minionId)
         } else {
+            log.trace { "Creating a new client for the context $context" }
             // Set it empty so that the next call with the same minion waits for it.
             clients[context.minionId] = Channel(1)
             createClient(context.minionId, monitoringCollector).also { clientsInUse[context.minionId] = it }
+        }.also {
+            log.trace { "Client was obtained for the context $context" }
         }
     }
 

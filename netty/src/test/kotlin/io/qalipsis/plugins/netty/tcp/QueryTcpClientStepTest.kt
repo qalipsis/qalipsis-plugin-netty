@@ -27,21 +27,25 @@ import assertk.assertions.prop
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.slot
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
+import io.qalipsis.api.meters.Timer
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
-import io.qalipsis.plugins.netty.socket.SocketStepException
-import io.qalipsis.plugins.netty.socket.SocketStepRequestException
+import io.qalipsis.plugins.netty.socket.SocketException
+import io.qalipsis.plugins.netty.socket.SocketRequestException
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.steps.StepTestHelper
 import kotlinx.coroutines.channels.Channel
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
@@ -63,6 +67,31 @@ internal class QueryTcpClientStepTest {
 
     @RelaxedMockK
     lateinit var simpleTcpClientStep: SimpleTcpClientStep<*>
+
+    @BeforeEach
+    fun setUp() {
+        every {
+            meterRegistry.counter(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Counter> {
+            every { report(any()) } returns this
+        }
+        every {
+            meterRegistry.timer(
+                scenarioName = any<String>(),
+                stepName = any<String>(),
+                name = any<String>(),
+                tags = any<Map<String, String>>()
+            )
+        } returns relaxedMockk<Timer> {
+            every { report(any()) } returns this
+        }
+    }
+
 
     @Test
     @Timeout(5L)
@@ -154,9 +183,9 @@ internal class QueryTcpClientStepTest {
                     eq("This is a test"),
                     refEq(request)
                 )
-            } throws SocketStepException(tcpResult)
+            } throws SocketException(tcpResult)
 
-            val result = assertThrows<SocketStepRequestException> {
+            val result = assertThrows<SocketRequestException> {
                 step.execute(ctx)
             }.result
 

@@ -110,7 +110,7 @@ internal class Http1BackendHandler(
         }
 
         fun release() {
-            while (!pendingRequests.isEmpty()) {
+            while (pendingRequests.isNotEmpty()) {
                 val requestPromise: RequestPromise = pendingRequests.poll()
                 requestPromise.promise.setFailure(IOException("Cannot send request to server"))
                 ReferenceCountUtil.release(requestPromise.request)

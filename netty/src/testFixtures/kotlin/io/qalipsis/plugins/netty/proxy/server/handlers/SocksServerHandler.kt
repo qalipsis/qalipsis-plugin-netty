@@ -53,25 +53,33 @@ class SocksServerHandler(
                     ctx.close()
                 }
             }
-            SocksVersion.SOCKS5 -> if (socksRequest is Socks5InitialRequest) {
-                //ctx.pipeline().addFirst(new Socks5PasswordAuthRequestDecoder());
-                //ctx.write(new DefaultSocks5AuthMethodResponse(Socks5AuthMethod.PASSWORD));
-                ctx.pipeline().addFirst(Socks5CommandRequestDecoder())
-                ctx.write(DefaultSocks5InitialResponse(Socks5AuthMethod.NO_AUTH))
-            } else if (socksRequest is Socks5PasswordAuthRequest) {
-                ctx.pipeline().addFirst(Socks5CommandRequestDecoder())
-                ctx.write(DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS))
-            } else if (socksRequest is Socks5CommandRequest) {
-                if (socksRequest.type() === Socks5CommandType.CONNECT) {
-                    ctx.pipeline().addLast(SocksServerConnectHandler())
-                    ctx.pipeline().remove(this)
-                    ctx.fireChannelRead(socksRequest)
-                } else {
-                    ctx.close()
+
+            SocksVersion.SOCKS5 -> when (socksRequest) {
+                is Socks5InitialRequest -> {
+                    //ctx.pipeline().addFirst(new Socks5PasswordAuthRequestDecoder());
+                    //ctx.write(new DefaultSocks5AuthMethodResponse(Socks5AuthMethod.PASSWORD));
+                    ctx.pipeline().addFirst(Socks5CommandRequestDecoder())
+                    ctx.write(DefaultSocks5InitialResponse(Socks5AuthMethod.NO_AUTH))
                 }
-            } else {
-                ctx.close()
+
+                is Socks5PasswordAuthRequest -> {
+                    ctx.pipeline().addFirst(Socks5CommandRequestDecoder())
+                    ctx.write(DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS))
+                }
+
+                is Socks5CommandRequest -> {
+                    if (socksRequest.type() === Socks5CommandType.CONNECT) {
+                        ctx.pipeline().addLast(SocksServerConnectHandler())
+                        ctx.pipeline().remove(this)
+                        ctx.fireChannelRead(socksRequest)
+                    } else {
+                        ctx.close()
+                    }
+                }
+
+                else -> ctx.close()
             }
+
             else -> ctx.close()
         }
     }
