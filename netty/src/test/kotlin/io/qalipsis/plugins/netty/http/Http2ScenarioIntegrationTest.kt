@@ -62,7 +62,7 @@ class Http2ScenarioIntegrationTest {
         val expectedHttpRequests = Http2Scenario.minions * (1 + Http2Scenario.repeat)
         val stats = statsClient.get()
 
-        val httpCount = stats.count
+        val httpCount = stats.requestsCount
         val httpDuration = stats.latestEpochMs - stats.earliestEpochMs
         log.info { "$httpCount HTTP requests in $httpDuration ms (${1000 * httpCount / httpDuration} req/s)" }
 
@@ -80,7 +80,7 @@ class Http2ScenarioIntegrationTest {
         val expectedHttpRequests = Http2Scenario.pooledMinions * (1 + Http2Scenario.repeat)
         val stats = statsClient.get()
 
-        val httpCount = stats.count
+        val httpCount = stats.requestsCount
         val httpDuration = stats.latestEpochMs - stats.earliestEpochMs
         log.info { "$httpCount HTTP requests in $httpDuration ms (${1000 * httpCount / httpDuration} req/s)" }
 
@@ -95,6 +95,7 @@ class Http2ScenarioIntegrationTest {
             withCommand("--https")
             withExposedPorts(8080, 8443)
             waitingFor(HostPortWaitStrategy())
+            withCreateContainerCmdModifier { cmd -> cmd.withPlatform("linux/amd64") }
         }
 
         private val log = logger()

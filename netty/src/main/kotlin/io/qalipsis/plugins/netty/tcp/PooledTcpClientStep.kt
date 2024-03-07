@@ -22,6 +22,8 @@ import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilderImpl
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.socket.PooledSocketClientStep
@@ -39,16 +41,16 @@ internal class PooledTcpClientStep<I>(
     id: StepName,
     retryPolicy: RetryPolicy?,
     private val ioCoroutineContext: CoroutineContext,
-    requestFactory: suspend (StepContext<*, *>, I) -> ByteArray,
+    requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, I) -> ByteArray,
     private val clientConfiguration: TcpClientConfiguration,
     poolConfiguration: SocketClientPoolConfiguration,
     eventLoopGroupSupplier: EventLoopGroupSupplier,
     eventsLogger: EventsLogger?,
     meterRegistry: CampaignMeterRegistry?
-) : PooledSocketClientStep<I, ByteArray, TcpClientConfiguration, ByteArray, ByteArray, TcpClient>(
+) : PooledSocketClientStep<I, ByteArray, TcpClientConfiguration, ByteArray, ByteArray, ByteArrayRequestBuilder, TcpClient>(
     id,
     retryPolicy,
-    ioCoroutineContext,
+    ByteArrayRequestBuilderImpl,
     requestFactory,
     poolConfiguration,
     "tcp",

@@ -30,7 +30,7 @@ import java.net.http.HttpResponse
  */
 class HttpPunchingBallStatsClient(scheme: String = "http", host: String = "localhost", port: Int) {
 
-    private val uri = URI.create("$scheme://$host:$port/stats")
+    private val uri = URI.create("$scheme://$host:$port/_stats")
 
     fun get(): RequestsStats {
         return JSON_MAPPER.readValue(uri.toURL())
@@ -51,4 +51,4 @@ class HttpPunchingBallStatsClient(scheme: String = "http", host: String = "local
     }
 }
 
-data class RequestsStats(val count: Long, val earliestEpochMs: Long, val latestEpochMs: Long)
+data class RequestsStats(val requestsCount: Long, val earliestEpochMs: Long, val latestEpochMs: Long)

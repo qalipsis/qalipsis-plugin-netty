@@ -102,7 +102,6 @@ internal class QueryTcpClientStepTest {
             QueryTcpClientStep<String>(
                 "",
                 null,
-                this.coroutineContext,
                 simpleTcpClientStep,
                 { _, _ -> request },
                 eventsLogger,
@@ -157,7 +156,6 @@ internal class QueryTcpClientStepTest {
             val step = QueryTcpClientStep<String>(
                 "",
                 null,
-                this.coroutineContext,
                 simpleTcpClientStep,
                 { _, _ -> request },
                 null,

@@ -33,6 +33,7 @@ import io.qalipsis.api.scenario.TestScenarioFactory
 import io.qalipsis.api.steps.DummyStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.configuration.TlsConfiguration
+import io.qalipsis.plugins.netty.http.HttpRequestBuilder
 import io.qalipsis.plugins.netty.http.request.HttpRequest
 import io.qalipsis.plugins.netty.http.request.SimpleHttpRequest
 import io.qalipsis.plugins.netty.netty
@@ -52,7 +53,7 @@ internal class HttpClientStepSpecificationImplTest {
         @Test
         internal fun `should add minimal http step as next`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             previousStep.netty().http {
                 request(requestSpecification)
@@ -92,7 +93,7 @@ internal class HttpClientStepSpecificationImplTest {
         @Test
         internal fun `should add http step with pool as next using addresses as string and int`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             previousStep.netty().http {
                 request(requestSpecification)
@@ -168,7 +169,7 @@ internal class HttpClientStepSpecificationImplTest {
         @Test
         internal fun `should add http step to scenario`() {
             val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Unit) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: Unit) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             scenario.netty().http {
                 request(requestSpecification)
@@ -212,7 +213,7 @@ internal class HttpClientStepSpecificationImplTest {
         @Test
         internal fun `should add minimal reused http step as next`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             previousStep.netty().httpWith("my-step-to-reuse") {
                 request(requestSpecification)
@@ -232,7 +233,7 @@ internal class HttpClientStepSpecificationImplTest {
         @Test
         internal fun `should add reused http step as next`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             previousStep.netty().httpWith("my-step-to-reuse") {
                 request(requestSpecification)

@@ -97,7 +97,7 @@ internal class HttpClientStepSpecificationConverterTest :
     @Test
     internal fun `should convert spec with name and retry policy to step`() = testDispatcherProvider.runTest {
         // given
-        val requestSpecification: suspend (StepContext<*, *>, String) -> HttpRequest<*> =
+        val requestSpecification: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> =
             { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
         val spec = HttpClientStepSpecificationImpl<String, Int>()
         spec.apply {
@@ -138,7 +138,7 @@ internal class HttpClientStepSpecificationConverterTest :
     @Test
     internal fun `should convert spec without name nor retry policy to step`() = testDispatcherProvider.runTest {
         // given
-        val requestSpecification: suspend (StepContext<*, *>, String) -> HttpRequest<*> =
+        val requestSpecification: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> =
             { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
         val spec = HttpClientStepSpecificationImpl<String, Int>()
         spec.apply {
@@ -176,7 +176,7 @@ internal class HttpClientStepSpecificationConverterTest :
     @Test
     internal fun `should convert spec with name and pool configuration`() = testDispatcherProvider.runTest {
         // given
-        val requestSpecification: suspend (StepContext<*, *>, String) -> HttpRequest<*> =
+        val requestSpecification: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> =
             { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
         val spec = HttpClientStepSpecificationImpl<String, Int>()
         spec.apply {

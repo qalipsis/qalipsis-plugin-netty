@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.http
 
-import io.qalipsis.api.Executors
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.exceptions.InvalidSpecificationException
@@ -30,8 +29,6 @@ import io.qalipsis.api.steps.StepSpecificationConverter
 import io.qalipsis.plugins.netty.http.response.HttpBodyDeserializer
 import io.qalipsis.plugins.netty.http.response.ResponseConverter
 import io.qalipsis.plugins.netty.http.spec.QueryHttpClientStepSpecification
-import jakarta.inject.Named
-import kotlin.coroutines.CoroutineContext
 
 /**
  * [StepSpecificationConverter] from [QueryHttpClientStepSpecification] to [QueryHttpClientStep].
@@ -42,8 +39,7 @@ import kotlin.coroutines.CoroutineContext
 internal class QueryHttpClientStepSpecificationConverter(
     deserializers: Collection<HttpBodyDeserializer>,
     private val eventsLogger: EventsLogger,
-    private val meterRegistry: CampaignMeterRegistry,
-    @Named(Executors.IO_EXECUTOR_NAME) private val ioCoroutineContext: CoroutineContext
+    private val meterRegistry: CampaignMeterRegistry
 ) : StepSpecificationConverter<QueryHttpClientStepSpecification<*, *>> {
 
     private val sortedDeserializers = deserializers.sortedBy(HttpBodyDeserializer::order)
@@ -67,7 +63,6 @@ internal class QueryHttpClientStepSpecificationConverter(
         val step = QueryHttpClientStep<I, O>(
             spec.name,
             spec.retryPolicy,
-            ioCoroutineContext,
             connectionOwner,
             spec.requestFactory,
             ResponseConverter(spec.bodyType, sortedDeserializers),
@@ -86,12 +81,15 @@ internal class QueryHttpClientStepSpecificationConverter(
                 // We can chain the names from step to step.
                 foundStep.connectionOwner
             }
+
             is HttpClientStep<*, *> -> {
                 foundStep
             }
+
             is StepDecorator<*, *> -> {
                 findHttpClientStep(foundStep.decorated)
             }
+
             else -> null
         }
     }

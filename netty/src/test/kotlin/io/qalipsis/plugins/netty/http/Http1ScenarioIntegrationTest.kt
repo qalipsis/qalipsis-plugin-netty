@@ -70,7 +70,7 @@ class Http1ScenarioIntegrationTest {
         val expectedHttpRequests = Http1Scenario.minions * (1 + Http1Scenario.repeat)
         val stats = statsClient.get()
 
-        val httpCount = stats.count
+        val httpCount = stats.requestsCount
         val httpDuration = stats.latestEpochMs - stats.earliestEpochMs
         log.info { "$httpCount HTTP requests in $httpDuration ms (${1000 * httpCount / httpDuration} req/s)" }
 
@@ -88,7 +88,7 @@ class Http1ScenarioIntegrationTest {
         val expectedHttpRequests = Http1Scenario.pooledMinions * (1 + Http1Scenario.repeat)
         val stats = statsClient.get()
 
-        val httpCount = stats.count
+        val httpCount = stats.requestsCount
         val httpDuration = stats.latestEpochMs - stats.earliestEpochMs
         log.info { "$httpCount HTTP requests in $httpDuration ms (${1000 * httpCount / httpDuration} req/s)" }
 
@@ -105,6 +105,7 @@ class Http1ScenarioIntegrationTest {
                 it.hostConfig!!.withMemory(128 * 1024.0.pow(2).toLong()).withCpuCount(2)
             }
             waitingFor(HostPortWaitStrategy())
+            withCreateContainerCmdModifier { cmd -> cmd.withPlatform("linux/amd64") }
         }
 
         private val log = logger()

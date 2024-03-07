@@ -231,7 +231,8 @@ internal class SimpleHttpClientStepTest {
         // given
         val response = relaxedMockk<HttpResponse>()
         val request = SimpleHttpRequest(HttpMethod.GET, "/")
-        val requestFactory: suspend (StepContext<*, *>, String) -> HttpRequest<*> = { _, _ -> request }
+        val requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> =
+            { _, _ -> request }
         val convertedResponse: QalipsisHttpResponse<String> = relaxedMockk()
         every { responseConverter.convert(response) } returns convertedResponse
         val step = spyk(

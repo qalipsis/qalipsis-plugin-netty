@@ -31,6 +31,7 @@ import io.qalipsis.api.exceptions.InvalidSpecificationException
 import io.qalipsis.api.steps.Step
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepCreationContextImpl
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
 import io.qalipsis.plugins.netty.tcp.spec.QueryTcpClientStepSpecification
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.coroutines.TestDispatcherProvider
@@ -42,7 +43,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
-import kotlin.coroutines.CoroutineContext
 
 @Suppress("UNCHECKED_CAST")
 internal class QueryTcpClientStepSpecificationConverterTest :
@@ -51,9 +51,6 @@ internal class QueryTcpClientStepSpecificationConverterTest :
     @JvmField
     @RegisterExtension
     val testDispatcherProvider = TestDispatcherProvider()
-
-    @RelaxedMockK
-    private lateinit var ioCoroutineContext: CoroutineContext
 
     @RelaxedMockK
     lateinit var connectionOwner: TcpClientStep<Long, *>
@@ -74,7 +71,7 @@ internal class QueryTcpClientStepSpecificationConverterTest :
     internal fun `should convert spec with name and retry policy to step when connection owner exists on the DAG`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             val spec = QueryTcpClientStepSpecification<Int>("my-previous-tcp-step")
             spec.apply {
@@ -97,11 +94,9 @@ internal class QueryTcpClientStepSpecificationConverterTest :
 
             // then
             creationContext.createdStep!!.let {
-                assertThat(it).all {
-                    isInstanceOf(QueryTcpClientStep::class)
+                assertThat(it).isInstanceOf(QueryTcpClientStep::class).all {
                     prop("name").isEqualTo("my-step")
                     prop("retryPolicy").isSameAs(mockedRetryPolicy)
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
                     prop("connectionOwner").isSameAs(connectionOwner)
                     prop("eventsLogger").isSameAs(eventsLogger)
@@ -114,7 +109,7 @@ internal class QueryTcpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner exists on the DAG`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             val spec = QueryTcpClientStepSpecification<Int>("my-previous-tcp-step")
             spec.apply {
@@ -135,11 +130,9 @@ internal class QueryTcpClientStepSpecificationConverterTest :
 
             // then
             creationContext.createdStep!!.let {
-                assertThat(it).all {
-                    isInstanceOf(QueryTcpClientStep::class)
+                assertThat(it).isInstanceOf(QueryTcpClientStep::class).all {
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
                     prop("connectionOwner").isSameAs(connectionOwner)
                     prop("eventsLogger").isNull()
@@ -154,7 +147,7 @@ internal class QueryTcpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner is indirectly referenced`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             val spec = QueryTcpClientStepSpecification<Int>("my-previous-kept-alive-tcp-step")
             spec.apply {
@@ -178,8 +171,7 @@ internal class QueryTcpClientStepSpecificationConverterTest :
 
             // then
             creationContext.createdStep!!.let {
-                assertThat(it).all {
-                    isInstanceOf(QueryTcpClientStep::class)
+                assertThat(it).isInstanceOf(QueryTcpClientStep::class).all {
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
                     prop("requestFactory").isSameAs(requestSpecification)
@@ -196,7 +188,7 @@ internal class QueryTcpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner does not exist on the DAG`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             val spec = QueryTcpClientStepSpecification<Int>("my-previous-tcp-step")
             spec.apply {
@@ -217,7 +209,7 @@ internal class QueryTcpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner exists but is of a different type`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             val spec = QueryTcpClientStepSpecification<Int>("my-previous-tcp-step")
             spec.apply {
