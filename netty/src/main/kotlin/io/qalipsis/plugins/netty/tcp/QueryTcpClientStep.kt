@@ -21,9 +21,10 @@ import io.qalipsis.api.context.StepName
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilderImpl
 import io.qalipsis.plugins.netty.socket.QuerySocketClientStep
 import io.qalipsis.plugins.netty.socket.SocketClientStep
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Step to perform a TCP operations onto a server, reusing the same connection from a past action.
@@ -33,17 +34,16 @@ import kotlin.coroutines.CoroutineContext
 internal class QueryTcpClientStep<I>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    ioCoroutineContext: CoroutineContext,
     connectionOwner: TcpClientStep<*, *>,
-    requestFactory: suspend (StepContext<*, *>, I) -> ByteArray,
+    requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, I) -> ByteArray,
     eventsLogger: EventsLogger?,
     meterRegistry: CampaignMeterRegistry?
-) : QuerySocketClientStep<I, ByteArray, ByteArray, ByteArray, SocketClientStep<*, ByteArray, ByteArray, *>>(
+) : QuerySocketClientStep<I, ByteArray, ByteArray, ByteArray, ByteArrayRequestBuilder, SocketClientStep<*, ByteArray, ByteArray, *>>(
     id,
     retryPolicy,
-    ioCoroutineContext,
     connectionOwner,
     "with-tcp",
+    ByteArrayRequestBuilderImpl,
     requestFactory,
     eventsLogger,
     meterRegistry

@@ -31,6 +31,7 @@ import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.scenario.TestScenarioFactory
 import io.qalipsis.api.steps.DummyStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
 import io.qalipsis.plugins.netty.configuration.TlsConfiguration
 import io.qalipsis.plugins.netty.netty
 import org.junit.jupiter.api.Nested
@@ -49,7 +50,7 @@ internal class TcpClientStepSpecificationImplTest {
         @Test
         internal fun `should add minimal tcp step as next`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(StepContext<*, *>, Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             previousStep.netty().tcp {
                 request(requestSpecification)
@@ -77,7 +78,7 @@ internal class TcpClientStepSpecificationImplTest {
         @Test
         internal fun `should add tcp step with pool as next using addresses as string and int`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(StepContext<*, *>, Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             previousStep.netty().tcp {
                 request(requestSpecification)
@@ -133,7 +134,7 @@ internal class TcpClientStepSpecificationImplTest {
         @Test
         internal fun `should add tcp step as next using addresses as InetAddress and default proxy type`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(StepContext<*, *>, Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             val connectionAddress = Inet4Address.getLoopbackAddress()
             val proxyAddress = Inet6Address.getLoopbackAddress()
@@ -169,7 +170,7 @@ internal class TcpClientStepSpecificationImplTest {
         @Test
         internal fun `should add tcp step to scenario`() {
             val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
-            val requestSpecification: suspend (StepContext<*, *>, Unit) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(StepContext<*, *>, Unit) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             scenario.netty().tcp {
                 request(requestSpecification)
@@ -201,7 +202,7 @@ internal class TcpClientStepSpecificationImplTest {
         @Test
         internal fun `should add minimal reused tcp step as next`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             previousStep.netty().tcpWith("my-step-to-reuse") {
                 request(requestSpecification)
@@ -220,7 +221,7 @@ internal class TcpClientStepSpecificationImplTest {
         @Test
         internal fun `should add reused tcp step as next`() {
             val previousStep = DummyStepSpecification()
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: Int) -> ByteArray =
+            val requestSpecification: suspend ByteArrayRequestBuilder.(ctx: StepContext<*, *>, input: Int) -> ByteArray =
                 { _, _ -> ByteArray(1) { it.toByte() } }
             previousStep.netty().tcpWith("my-step-to-reuse") {
                 request(requestSpecification)

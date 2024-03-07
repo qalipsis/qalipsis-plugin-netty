@@ -22,6 +22,7 @@ import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.ConfigurableStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
 import io.qalipsis.plugins.netty.NettyPluginSpecification
 import io.qalipsis.plugins.netty.NettyScenarioSpecification
 import io.qalipsis.plugins.netty.RequestResult
@@ -35,7 +36,7 @@ interface TcpClientStepSpecification<INPUT> :
      * Configures the creation of the payload to send to the remote address, using the [StepContext] and the input received
      * from the previous step.
      */
-    fun request(requestFactory: suspend (StepContext<*, *>, INPUT) -> ByteArray)
+    fun request(requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, INPUT) -> ByteArray)
 
     /**
      * Configures the connection to the remote address.
@@ -64,7 +65,8 @@ internal class TcpClientStepSpecificationImpl<INPUT> :
     AbstractStepSpecification<INPUT, ConnectionAndRequestResult<INPUT, ByteArray>, TcpClientStepSpecification<INPUT>>(),
     TcpClientStepSpecification<INPUT> {
 
-    var requestFactory: suspend (StepContext<*, *>, INPUT) -> ByteArray = { _, _ -> ByteArray(0) }
+    var requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, INPUT) -> ByteArray =
+        { _, _ -> ByteArray(0) }
 
     val connectionConfiguration = TcpClientConfiguration()
 
@@ -72,7 +74,7 @@ internal class TcpClientStepSpecificationImpl<INPUT> :
 
     val monitoringConfiguration = StepMonitoringConfiguration()
 
-    override fun request(requestFactory: suspend (StepContext<*, *>, INPUT) -> ByteArray) {
+    override fun request(requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, INPUT) -> ByteArray) {
         this.requestFactory = requestFactory
     }
 
@@ -136,11 +138,12 @@ class QueryTcpClientStepSpecification<INPUT>(val stepName: String) :
     AbstractStepSpecification<INPUT, RequestResult<INPUT, ByteArray, *>, QueryTcpClientStepSpecification<INPUT>>(),
     NettyPluginSpecification<INPUT, RequestResult<INPUT, ByteArray, *>, QueryTcpClientStepSpecification<INPUT>> {
 
-    internal var requestFactory: suspend (StepContext<*, *>, INPUT) -> ByteArray = { _, _ -> ByteArray(0) }
+    internal var requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, INPUT) -> ByteArray =
+        { _, _ -> ByteArray(0) }
 
     internal val monitoringConfiguration = StepMonitoringConfiguration()
 
-    fun request(requestBlock: suspend (StepContext<*, *>, input: INPUT) -> ByteArray) {
+    fun request(requestBlock: suspend ByteArrayRequestBuilder.(StepContext<*, *>, input: INPUT) -> ByteArray) {
         this.requestFactory = requestBlock
     }
 

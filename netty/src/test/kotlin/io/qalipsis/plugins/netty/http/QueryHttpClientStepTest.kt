@@ -105,11 +105,10 @@ internal class QueryHttpClientStepTest {
     @Timeout(5L)
     internal fun `should call the actual http step with events and meters`() = testDispatcherProvider.runTest {
         val request = relaxedMockk<HttpRequest<*>>()
-        val requestBlock: suspend (StepContext<*, *>, String) -> HttpRequest<*> = { _, _ -> request }
+        val requestBlock: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> = { _, _ -> request }
         val step = QueryHttpClientStep(
             "",
             null,
-            this.coroutineContext,
             simpleHttpClientStep,
             requestBlock,
             responseConverter,
@@ -163,11 +162,11 @@ internal class QueryHttpClientStepTest {
     internal fun `should call the actual http step without events and meters and rethrow the exception`() =
         testDispatcherProvider.runTest {
             val request = relaxedMockk<HttpRequest<*>>()
-            val requestBlock: suspend (StepContext<*, *>, String) -> HttpRequest<*> = { _, _ -> request }
+            val requestBlock: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> =
+                { _, _ -> request }
             val step = QueryHttpClientStep(
                 "",
                 null,
-                this.coroutineContext,
                 simpleHttpClientStep,
                 requestBlock,
                 responseConverter,

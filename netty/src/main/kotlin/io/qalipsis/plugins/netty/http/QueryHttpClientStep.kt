@@ -27,7 +27,6 @@ import io.qalipsis.plugins.netty.http.client.monitoring.HttpStepContextBasedSock
 import io.qalipsis.plugins.netty.http.response.ResponseConverter
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.socket.QuerySocketClientStep
-import kotlin.coroutines.CoroutineContext
 import io.qalipsis.plugins.netty.http.request.HttpRequest as QalipsisHttpRequest
 import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpResponse
 
@@ -39,18 +38,17 @@ import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpRespo
 internal class QueryHttpClientStep<I, O>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    ioCoroutineContext: CoroutineContext,
     connectionOwner: HttpClientStep<*, *>,
-    requestFactory: suspend (StepContext<*, *>, I) -> QalipsisHttpRequest<*>,
+    requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, I) -> QalipsisHttpRequest<*>,
     private val responseConverter: ResponseConverter<O>,
     private val eventsLogger: EventsLogger?,
     private val meterRegistry: CampaignMeterRegistry?
-) : QuerySocketClientStep<I, QalipsisHttpResponse<O>, QalipsisHttpRequest<*>, HttpResponse, HttpClientStep<*, *>>(
+) : QuerySocketClientStep<I, QalipsisHttpResponse<O>, QalipsisHttpRequest<*>, HttpResponse, HttpRequestBuilder, HttpClientStep<*, *>>(
     id,
     retryPolicy,
-    ioCoroutineContext,
     connectionOwner,
     "with-http",
+    HttpRequestBuilderImpl,
     requestFactory,
     eventsLogger,
     meterRegistry

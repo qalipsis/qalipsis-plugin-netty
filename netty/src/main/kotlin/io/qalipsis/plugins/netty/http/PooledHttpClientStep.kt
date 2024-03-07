@@ -62,7 +62,7 @@ internal class PooledHttpClientStep<I, O>(
     retryPolicy: RetryPolicy?,
     private val ioCoroutineContext: CoroutineContext,
     private val ioCoroutineScope: CoroutineScope,
-    private val requestFactory: suspend (StepContext<*, *>, I) -> HttpRequest<*>,
+    private val requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, I) -> HttpRequest<*>,
     private val clientConfiguration: HttpClientConfiguration,
     private val poolConfiguration: SocketClientPoolConfiguration,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
@@ -121,7 +121,7 @@ internal class PooledHttpClientStep<I, O>(
         val monitoringCollector = HttpStepContextBasedSocketMonitoringCollector(context, eventsLogger, meterRegistry)
         val input = context.receive()
         val response = withContext(ioCoroutineContext) {
-            execute(monitoringCollector, context, input, requestFactory(context, input))
+            execute(monitoringCollector, context, input, HttpRequestBuilderImpl.requestFactory(context, input))
         }
         context.send(monitoringCollector.toResult(input, responseConverter.convert(response), null))
     }

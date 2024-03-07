@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.tcp
 
-import io.qalipsis.api.Executors
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.exceptions.InvalidSpecificationException
@@ -28,8 +27,6 @@ import io.qalipsis.api.steps.StepDecorator
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.api.steps.StepSpecificationConverter
 import io.qalipsis.plugins.netty.tcp.spec.QueryTcpClientStepSpecification
-import jakarta.inject.Named
-import kotlin.coroutines.CoroutineContext
 
 /**
  * [StepSpecificationConverter] from [QueryTcpClientStepSpecification] to [QueryTcpClientStep].
@@ -38,7 +35,6 @@ import kotlin.coroutines.CoroutineContext
  */
 @StepConverter
 internal class QueryTcpClientStepSpecificationConverter(
-    @Named(Executors.IO_EXECUTOR_NAME) private val ioCoroutineContext: CoroutineContext,
     private val eventsLogger: EventsLogger,
     private val meterRegistry: CampaignMeterRegistry
 ) :
@@ -64,7 +60,6 @@ internal class QueryTcpClientStepSpecificationConverter(
             QueryTcpClientStep(
                 spec.name,
                 spec.retryPolicy,
-                ioCoroutineContext,
                 connectionOwner,
                 spec.requestFactory,
                 eventsLogger.takeIf { spec.monitoringConfiguration.events },
