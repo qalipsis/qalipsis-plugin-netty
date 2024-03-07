@@ -28,11 +28,11 @@ import io.qalipsis.api.pool.Pool
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
+import io.qalipsis.plugins.netty.RequestBuilder
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.monitoring.StepBasedTcpMonitoringCollector
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.tcp.spec.SocketClientPoolConfiguration
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -47,11 +47,11 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author Eric Jessé
  */
-internal abstract class PooledSocketClientStep<I, O, CONF : SocketClientConfiguration, REQ : Any, RES : Any, CLI : SocketClient<CONF, REQ, RES, CLI>>(
+internal abstract class PooledSocketClientStep<I, O, CONF : SocketClientConfiguration, REQ : Any, RES : Any, REQ_BUILDER : RequestBuilder<REQ>, CLI : SocketClient<CONF, REQ, RES, CLI>>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    private val ioCoroutineContext: CoroutineContext,
-    private val requestFactory: suspend (StepContext<*, *>, I) -> REQ,
+    private val requestBuilder: REQ_BUILDER,
+    private val requestFactory: suspend REQ_BUILDER.(StepContext<*, *>, I) -> REQ,
     private val poolConfiguration: SocketClientPoolConfiguration,
     private val stepQualifier: String,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
@@ -91,9 +91,7 @@ internal abstract class PooledSocketClientStep<I, O, CONF : SocketClientConfigur
         val monitoringCollector =
             StepContextBasedSocketMonitoringCollector(context, eventsLogger, meterRegistry, stepQualifier)
         val input = context.receive()
-        val response = withContext(ioCoroutineContext) {
-            execute(monitoringCollector, context, input, requestFactory(context, input))
-        }
+        val response = execute(monitoringCollector, context, input, requestBuilder.requestFactory(context, input))
         val result: RequestResult<I, RES, *> = monitoringCollector.toResult(input, response, null)
         context.send(result)
     }

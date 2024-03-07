@@ -39,7 +39,6 @@ import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringColl
 import io.qalipsis.plugins.netty.socket.SimpleSocketClientStep
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpResponse
 
@@ -53,16 +52,16 @@ internal class SimpleHttpClientStep<I, O>(
     retryPolicy: RetryPolicy?,
     private val ioCoroutineScope: CoroutineScope,
     private val ioCoroutineContext: CoroutineContext,
-    requestFactory: suspend (StepContext<*, *>, I) -> HttpRequest<*>,
+    requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, I) -> HttpRequest<*>,
     private val clientConfiguration: HttpClientConfiguration,
     eventLoopGroupSupplier: EventLoopGroupSupplier,
     private val responseConverter: ResponseConverter<O>,
     private val eventsLogger: EventsLogger?,
     private val meterRegistry: CampaignMeterRegistry?
-) : SimpleSocketClientStep<I, QalipsisHttpResponse<O>, HttpClientConfiguration, HttpRequest<*>, HttpResponse, MultiSocketHttpClient>(
+) : SimpleSocketClientStep<I, QalipsisHttpResponse<O>, HttpClientConfiguration, HttpRequest<*>, HttpResponse, HttpRequestBuilder, MultiSocketHttpClient>(
     id,
     retryPolicy,
-    ioCoroutineContext,
+    HttpRequestBuilderImpl,
     requestFactory,
     clientConfiguration,
     "http",
@@ -83,9 +82,7 @@ internal class SimpleHttpClientStep<I, O>(
             clients.remove(minionId)?.close()
             clientsInUse.remove(minionId)
         }
-        withContext(ioCoroutineContext) {
-            cli.open(clientConfiguration, workerGroup, monitoringCollector)
-        }
+        cli.open(clientConfiguration, workerGroup, monitoringCollector)
         return cli
     }
 

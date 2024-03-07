@@ -232,7 +232,8 @@ internal class PooledHttpClientStepTest {
     @Test
     internal fun `should extract the input and execute`() = testDispatcherProvider.run {
         val request = relaxedMockk<HttpRequest<*>>()
-        val requestExtractor: suspend (StepContext<*, *>, String) -> HttpRequest<*> = { _, _ -> request }
+        val requestExtractor: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> =
+            { _, _ -> request }
         val response = relaxedMockk<HttpResponse>()
         val convertedResponse: QalipsisHttpResponse<String> = relaxedMockk()
         every { responseConverter.convert(response) } returns convertedResponse
@@ -281,7 +282,8 @@ internal class PooledHttpClientStepTest {
         }
         val ctx = StepTestHelper.createStepContext<String, RequestResult<String, HttpResponse, *>>("TEST")
         val request = relaxedMockk<HttpRequest<*>>()
-        val requestExtractor: suspend (StepContext<*, *>, String) -> HttpRequest<*> = { _, _ -> request }
+        val requestExtractor: suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*> =
+            { _, _ -> request }
         val monitoringCollector = StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test")
         every { configuration.followRedirections } returns true
         every { configuration.maxRedirections } returns 1000
@@ -324,8 +326,8 @@ internal class PooledHttpClientStepTest {
             val request = relaxedMockk<HttpRequest<*>>()
 
             val ctx = StepTestHelper.createStepContext<String, RequestResult<String, HttpResponse, *>>("TEST")
-            val requestExtractor = relaxedMockk<suspend (StepContext<*, *>, String) -> HttpRequest<*>>()
-            coEvery { requestExtractor(refEq(ctx), eq("TEST")) } returns request
+            val requestExtractor =
+                relaxedMockk<suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*>>()
             val monitoringCollector =
                 StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test")
             every { configuration.followRedirections } returns false
@@ -382,7 +384,7 @@ internal class PooledHttpClientStepTest {
 
         val ctx = StepTestHelper.createStepContext<String, RequestResult<String, HttpResponse, *>>("TEST")
         val monitoringCollector = StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test")
-        val requestExtractor = relaxedMockk<suspend (StepContext<*, *>, String) -> HttpRequest<*>>()
+        val requestExtractor = relaxedMockk<suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*>>()
 
         every { configuration.followRedirections } returns true
         every { configuration.maxRedirections } returns 1000
@@ -433,8 +435,7 @@ internal class PooledHttpClientStepTest {
 
         val ctx = StepTestHelper.createStepContext<String, RequestResult<String, HttpResponse, *>>("TEST")
         val monitoringCollector = StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test")
-        val requestExtractor = relaxedMockk<suspend (StepContext<*, *>, String) -> HttpRequest<*>>()
-        coEvery { requestExtractor(refEq(ctx), eq("TEST")) } returns request1
+        val requestExtractor = relaxedMockk<suspend HttpRequestBuilder.(StepContext<*, *>, String) -> HttpRequest<*>>()
 
         every { configuration.followRedirections } returns true
         every { configuration.maxRedirections } returns 5

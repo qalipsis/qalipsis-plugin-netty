@@ -41,6 +41,7 @@ import io.qalipsis.api.meters.Counter
 import io.qalipsis.api.meters.Timer
 import io.qalipsis.api.pool.FixedPool
 import io.qalipsis.api.pool.Pool
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.monitoring.StepBasedTcpMonitoringCollector
@@ -195,7 +196,8 @@ internal class PooledTcpClientStepTest {
         // given
         val request = ByteArray(0)
         val response = ByteArray(0)
-        val requestFactory: suspend (StepContext<*, *>, String) -> ByteArray = { _, _ -> request }
+        val requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, String) -> ByteArray =
+            { _, _ -> request }
         val step = spyk(
             PooledTcpClientStep(
                 "my-step",
@@ -241,7 +243,8 @@ internal class PooledTcpClientStepTest {
     fun `should execute on client`() = testDispatcherProvider.run {
         // given
         val request = ByteArray(0)
-        val requestFactory: suspend (StepContext<*, *>, String) -> ByteArray = { _, _ -> request }
+        val requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, String) -> ByteArray =
+            { _, _ -> request }
         val step = PooledTcpClientStep(
             "my-step",
             null,

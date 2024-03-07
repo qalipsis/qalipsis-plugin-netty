@@ -105,6 +105,7 @@ class Http1ScenarioIntegrationTest {
                 it.hostConfig!!.withMemory(128 * 1024.0.pow(2).toLong()).withCpuCount(2)
             }
             waitingFor(HostPortWaitStrategy())
+            withCreateContainerCmdModifier { cmd -> cmd.withPlatform("linux/amd64") }
         }
 
         private val log = logger()

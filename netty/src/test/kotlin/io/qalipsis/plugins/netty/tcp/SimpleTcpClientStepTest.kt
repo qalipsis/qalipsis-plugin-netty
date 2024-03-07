@@ -30,6 +30,7 @@ import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.meters.Counter
 import io.qalipsis.api.meters.Timer
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.exceptions.ClosedClientException
@@ -195,7 +196,8 @@ internal class SimpleTcpClientStepTest {
         // given
         val request = ByteArray(0)
         val response = ByteArray(0)
-        val requestFactory: suspend (StepContext<*, *>, String) -> ByteArray = { _, _ -> request }
+        val requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, String) -> ByteArray =
+            { _, _ -> request }
         val step = spyk(
             SimpleTcpClientStep(
                 "my-step",

@@ -23,6 +23,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepCreationContextImpl
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.tcp.spec.TcpClientStepSpecificationImpl
 import io.qalipsis.test.assertk.prop
@@ -64,7 +65,7 @@ internal class TcpClientStepSpecificationConverterTest :
     @Test
     internal fun `should convert spec with name and retry policy to step`() = testDispatcherProvider.runTest {
         // given
-        val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
+        val requestSpecification: suspend ByteArrayRequestBuilder.(StepContext<*, *>, Int) -> ByteArray =
             { _, _ -> ByteArray(1) { it.toByte() } }
         val spec = TcpClientStepSpecificationImpl<Int>()
         spec.apply {
@@ -97,7 +98,7 @@ internal class TcpClientStepSpecificationConverterTest :
     @Test
     internal fun `should convert spec without name nor retry policy to step`() = testDispatcherProvider.runTest {
         // given
-        val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
+        val requestSpecification: suspend ByteArrayRequestBuilder.(StepContext<*, *>, Int) -> ByteArray =
             { _, _ -> ByteArray(1) { it.toByte() } }
         val spec = TcpClientStepSpecificationImpl<Int>()
         spec.apply {
@@ -127,7 +128,7 @@ internal class TcpClientStepSpecificationConverterTest :
     @Test
     internal fun `should convert spec with name and pool configuration`() = testDispatcherProvider.runTest {
         // given
-        val requestSpecification: suspend (StepContext<*, *>, Int) -> ByteArray =
+        val requestSpecification: suspend ByteArrayRequestBuilder.(StepContext<*, *>, Int) -> ByteArray =
             { _, _ -> ByteArray(1) { it.toByte() } }
         val spec = TcpClientStepSpecificationImpl<Int>()
         spec.apply {

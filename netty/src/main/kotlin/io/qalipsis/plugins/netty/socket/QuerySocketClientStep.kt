@@ -22,10 +22,9 @@ import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
+import io.qalipsis.plugins.netty.RequestBuilder
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Parent class of steps executing requests using [SocketClient]s created by other steps.
@@ -38,13 +37,13 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author Eric Jessé
  */
-internal abstract class QuerySocketClientStep<I, O : Any, REQ : Any, RES : Any, OWNER : SocketClientStep<*, REQ, RES, *>>(
+internal abstract class QuerySocketClientStep<I, O : Any, REQ : Any, RES : Any, REQ_BUILDER : RequestBuilder<REQ>, OWNER : SocketClientStep<*, REQ, RES, *>>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    private val ioCoroutineContext: CoroutineContext,
     val connectionOwner: OWNER,
     private val stepQualifier: String,
-    private val requestFactory: suspend (StepContext<*, *>, I) -> REQ,
+    private val requestBuilder: REQ_BUILDER,
+    private val requestFactory: suspend REQ_BUILDER.(StepContext<*, *>, I) -> REQ,
     private val eventsLogger: EventsLogger?,
     private val meterRegistry: CampaignMeterRegistry?
 ) : AbstractStep<I, RequestResult<I, O, *>>(id, retryPolicy) {
@@ -54,9 +53,12 @@ internal abstract class QuerySocketClientStep<I, O : Any, REQ : Any, RES : Any, 
             createMonitoringCollector(context)
         val input = context.receive()
         try {
-            val result = withContext(ioCoroutineContext) {
-                connectionOwner.execute(monitoringCollector, context, input, requestFactory(context, input))
-            }
+            val result = connectionOwner.execute(
+                monitoringCollector,
+                context,
+                input,
+                requestBuilder.requestFactory(context, input)
+            )
             context.send(monitoringCollector.toResult(input, convertResponseToOutput(result), null))
         } catch (e: SocketRequestException) {
             throw e
