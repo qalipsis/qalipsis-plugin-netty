@@ -41,6 +41,7 @@ import io.qalipsis.api.meters.Counter
 import io.qalipsis.api.meters.Timer
 import io.qalipsis.api.pool.FixedPool
 import io.qalipsis.api.pool.Pool
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.RequestResult
 import io.qalipsis.plugins.netty.monitoring.StepBasedTcpMonitoringCollector
@@ -135,9 +136,11 @@ internal class PooledTcpClientStepTest {
                     }
                 }
             }
-            val tags = relaxedMockk<Map<String, String>>()
+            val eventsTags = relaxedMockk<Map<String, String>>()
+            val metersTags = relaxedMockk<Map<String, String>>()
             val startStopContext1 = relaxedMockk<StepStartStopContext> {
-                every { toEventTags() } returns tags
+                every { toEventTags() } returns eventsTags
+                every { toMetersTags() } returns metersTags
             }
             every { workerGroupSupplier.getGroup() } returns workerGroup
 
@@ -149,10 +152,10 @@ internal class PooledTcpClientStepTest {
             val fixedPool1 = step.getProperty<Pool<TcpClient>>("clientsPool")
             assertThat(step).typedProp<StepBasedTcpMonitoringCollector>("stepMonitoringCollector").all {
                 prop("eventsLogger").isSameAs(eventsLogger)
-                prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.tcp")
                 prop("meterPrefix").isEqualTo("netty-tcp")
-                prop("tags").isSameAs(tags)
+                prop("eventsTags").isSameAs(eventsTags)
+                prop("metersTags").isSameAs(metersTags)
             }
             assertThat(step).prop("workerGroup").isSameAs(workerGroup)
 
@@ -168,9 +171,11 @@ internal class PooledTcpClientStepTest {
             }
 
             // when
-            val tags2 = relaxedMockk<Map<String, String>>()
+            val eventsTags2 = relaxedMockk<Map<String, String>>()
+            val metersTags2 = relaxedMockk<Map<String, String>>()
             val startStopContext2 = relaxedMockk<StepStartStopContext> {
-                every { toEventTags() } returns tags2
+                every { toEventTags() } returns eventsTags2
+                every { toMetersTags() } returns metersTags2
             }
             step.start(startStopContext2)
             assertThat(createdClientsCount.get()).isEqualTo(20)
@@ -183,10 +188,10 @@ internal class PooledTcpClientStepTest {
 
             assertThat(step).typedProp<StepBasedTcpMonitoringCollector>("stepMonitoringCollector").all {
                 prop("eventsLogger").isSameAs(eventsLogger)
-                prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventPrefix").isEqualTo("netty.tcp")
                 prop("meterPrefix").isEqualTo("netty-tcp")
-                prop("tags").isSameAs(tags2)
+                prop("eventsTags").isSameAs(eventsTags2)
+                prop("metersTags").isSameAs(metersTags2)
             }
         }
 
@@ -195,7 +200,8 @@ internal class PooledTcpClientStepTest {
         // given
         val request = ByteArray(0)
         val response = ByteArray(0)
-        val requestFactory: suspend (StepContext<*, *>, String) -> ByteArray = { _, _ -> request }
+        val requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, String) -> ByteArray =
+            { _, _ -> request }
         val step = spyk(
             PooledTcpClientStep(
                 "my-step",
@@ -241,7 +247,8 @@ internal class PooledTcpClientStepTest {
     fun `should execute on client`() = testDispatcherProvider.run {
         // given
         val request = ByteArray(0)
-        val requestFactory: suspend (StepContext<*, *>, String) -> ByteArray = { _, _ -> request }
+        val requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, String) -> ByteArray =
+            { _, _ -> request }
         val step = PooledTcpClientStep(
             "my-step",
             null,

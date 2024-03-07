@@ -25,6 +25,7 @@ import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.plugins.netty.NettyPluginSpecification
 import io.qalipsis.plugins.netty.NettyScenarioSpecification
 import io.qalipsis.plugins.netty.RequestResult
+import io.qalipsis.plugins.netty.http.HttpRequestBuilder
 import io.qalipsis.plugins.netty.http.request.HttpRequest
 import io.qalipsis.plugins.netty.http.response.HttpResponse
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
@@ -39,7 +40,7 @@ interface HttpClientStepSpecification<INPUT, OUTPUT> :
      * Configures the creation of the payload to send to the remote address, using the [StepContext] and the input received
      * from the previous step.
      */
-    fun request(requestFactory: suspend (StepContext<*, *>, INPUT) -> HttpRequest<*>)
+    fun request(requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, INPUT) -> HttpRequest<*>)
 
     /**
      * Configures the connection to the remote address.
@@ -74,7 +75,7 @@ internal class HttpClientStepSpecificationImpl<INPUT, OUTPUT> :
     AbstractStepSpecification<INPUT, ConnectionAndRequestResult<INPUT, HttpResponse<OUTPUT>>, HttpClientStepSpecification<INPUT, OUTPUT>>(),
     HttpClientStepSpecification<INPUT, OUTPUT> {
 
-    lateinit var requestFactory: suspend (StepContext<*, *>, INPUT) -> HttpRequest<*>
+    lateinit var requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, INPUT) -> HttpRequest<*>
 
     var bodyType: KClass<*> = String::class
 
@@ -84,7 +85,7 @@ internal class HttpClientStepSpecificationImpl<INPUT, OUTPUT> :
 
     val monitoringConfiguration = StepMonitoringConfiguration()
 
-    override fun request(requestFactory: suspend (StepContext<*, *>, INPUT) -> HttpRequest<*>) {
+    override fun request(requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, INPUT) -> HttpRequest<*>) {
         this.requestFactory = requestFactory
     }
 
@@ -154,13 +155,13 @@ class QueryHttpClientStepSpecification<INPUT, OUTPUT>(val stepName: String) :
     AbstractStepSpecification<INPUT, RequestResult<INPUT, HttpResponse<OUTPUT>, *>, QueryHttpClientStepSpecification<INPUT, OUTPUT>>(),
     NettyPluginSpecification<INPUT, RequestResult<INPUT, HttpResponse<OUTPUT>, *>, QueryHttpClientStepSpecification<INPUT, OUTPUT>> {
 
-    internal lateinit var requestFactory: suspend (StepContext<*, *>, INPUT) -> HttpRequest<*>
+    internal lateinit var requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, INPUT) -> HttpRequest<*>
 
     var bodyType: KClass<*> = String::class
 
     internal val monitoringConfiguration = StepMonitoringConfiguration()
 
-    fun request(requestBlock: suspend (StepContext<*, *>, input: INPUT) -> HttpRequest<*>) {
+    fun request(requestBlock: suspend HttpRequestBuilder.(StepContext<*, *>, input: INPUT) -> HttpRequest<*>) {
         this.requestFactory = requestBlock
     }
 

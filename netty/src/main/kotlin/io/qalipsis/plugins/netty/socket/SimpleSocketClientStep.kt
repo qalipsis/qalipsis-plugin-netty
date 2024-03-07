@@ -28,16 +28,15 @@ import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
+import io.qalipsis.plugins.netty.RequestBuilder
 import io.qalipsis.plugins.netty.exceptions.ClosedClientException
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Parent class of steps using a implementations of [SocketClient]s created individually for each minion.
@@ -51,11 +50,11 @@ import kotlin.coroutines.CoroutineContext
  *
  * @author Eric Jessé
  */
-internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientConfiguration, REQ : Any, RES : Any, CLI : SocketClient<CONF, REQ, RES, CLI>>(
+internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientConfiguration, REQ : Any, RES : Any, REQ_BUILDER : RequestBuilder<REQ>, CLI : SocketClient<CONF, REQ, RES, CLI>>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    private val ioCoroutineContext: CoroutineContext,
-    private val requestFactory: suspend (StepContext<*, *>, I) -> REQ,
+    private val requestBuilder: REQ_BUILDER,
+    private val requestFactory: suspend REQ_BUILDER.(StepContext<*, *>, I) -> REQ,
     private val configuration: CONF,
     private val stepQualifier: String,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
@@ -101,9 +100,7 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         log.trace { "Receiving the input" }
         val input = context.receive()
         log.trace { "Executing the request" }
-        val response = withContext(ioCoroutineContext) {
-            execute(monitoringCollector, context, input, requestFactory(context, input))
-        }
+        val response = execute(monitoringCollector, context, input, requestBuilder.requestFactory(context, input))
         log.trace { "Converting the response into result" }
         val result = monitoringCollector.toResult(input, convertResponseToOutput(response), null)
         if (result.isFailure) {

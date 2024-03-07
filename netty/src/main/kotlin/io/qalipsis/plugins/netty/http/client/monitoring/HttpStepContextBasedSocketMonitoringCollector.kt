@@ -46,10 +46,10 @@ internal class HttpStepContextBasedSocketMonitoringCollector(
         eventsLogger?.info(
             "${eventPrefix}.http-status",
             status.code(),
-            tags = tags
+            tags = eventTags
         )
-        tags["status"] = status.code().toString()
-        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-http-status", tags)?.report {
+        eventTags["status"] = status.code().toString()
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-http-status", eventTags)?.report {
             display(
                 "status ${status.code()}: %,.0f",
                 ReportMessageSeverity.INFO,

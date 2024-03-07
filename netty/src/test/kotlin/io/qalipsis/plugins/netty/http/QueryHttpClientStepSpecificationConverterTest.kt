@@ -51,7 +51,6 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import kotlin.coroutines.CoroutineContext
 
 @WithMockk
 @Suppress("UNCHECKED_CAST")
@@ -61,9 +60,6 @@ internal class QueryHttpClientStepSpecificationConverterTest :
     @JvmField
     @RegisterExtension
     val testDispatcherProvider = TestDispatcherProvider()
-
-    @RelaxedMockK
-    private lateinit var ioCoroutineContext: CoroutineContext
 
     private val bodyDeserializer1: HttpBodyDeserializer = mockk {
         every { order } returns -1
@@ -96,7 +92,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
     internal fun `should convert spec with name and retry policy to step when connection owner exists on the DAG`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             val spec = QueryHttpClientStepSpecification<String, String>("my-previous-http-step")
             spec.apply {
@@ -119,11 +115,9 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
             // then
             creationContext.createdStep!!.let {
-                assertThat(it).all {
-                    isInstanceOf(QueryHttpClientStep::class)
+                assertThat(it).isInstanceOf(QueryHttpClientStep::class).all {
                     prop("name").isEqualTo("my-step")
                     prop("retryPolicy").isSameAs(mockedRetryPolicy)
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
                     prop("connectionOwner").isSameAs(connectionOwner)
                     typedProp<ResponseConverter<*>>("responseConverter").all {
@@ -143,7 +137,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner exists on the DAG`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             val spec = QueryHttpClientStepSpecification<String, String>("my-previous-http-step")
             spec.apply {
@@ -164,11 +158,9 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
             // then
             creationContext.createdStep!!.let {
-                assertThat(it).all {
-                    isInstanceOf(QueryHttpClientStep::class)
+                assertThat(it).isInstanceOf(QueryHttpClientStep::class).all {
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
                     prop("connectionOwner").isSameAs(connectionOwner)
                     typedProp<ResponseConverter<*>>("responseConverter").all {
@@ -190,7 +182,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner is indirectly referenced`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             val spec = QueryHttpClientStepSpecification<String, String>("my-previous-kept-alive-http-step")
             spec.apply {
@@ -214,11 +206,9 @@ internal class QueryHttpClientStepSpecificationConverterTest :
 
             // then
             creationContext.createdStep!!.let {
-                assertThat(it).all {
-                    isInstanceOf(QueryHttpClientStep::class)
+                assertThat(it).isInstanceOf(QueryHttpClientStep::class).all {
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("requestFactory").isSameAs(requestSpecification)
                     prop("connectionOwner").isSameAs(connectionOwner)
                     typedProp<ResponseConverter<*>>("responseConverter").all {
@@ -240,7 +230,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner does not exist on the DAG`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             val spec = QueryHttpClientStepSpecification<String, String>("my-previous-http-step")
             spec.apply {
@@ -261,7 +251,7 @@ internal class QueryHttpClientStepSpecificationConverterTest :
     internal fun `should convert spec without name nor retry policy to step when connection owner exists but is of a different type`() =
         testDispatcherProvider.runTest {
             // given
-            val requestSpecification: suspend (ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
+            val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: String) -> HttpRequest<*> =
                 { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
             val spec = QueryHttpClientStepSpecification<String, String>("my-previous-http-step")
             spec.apply {

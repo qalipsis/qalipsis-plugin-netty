@@ -23,6 +23,8 @@ import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.retry.RetryPolicy
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilder
+import io.qalipsis.plugins.netty.ByteArrayRequestBuilderImpl
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.socket.SimpleSocketClientStep
@@ -39,15 +41,15 @@ internal class SimpleTcpClientStep<I>(
     id: StepName,
     retryPolicy: RetryPolicy?,
     private val ioCoroutineContext: CoroutineContext,
-    requestFactory: suspend (StepContext<*, *>, I) -> ByteArray,
+    requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, I) -> ByteArray,
     private val clientConfiguration: TcpClientConfiguration,
     eventLoopGroupSupplier: EventLoopGroupSupplier,
     eventsLogger: EventsLogger?,
     meterRegistry: CampaignMeterRegistry?
-) : SimpleSocketClientStep<I, ByteArray, TcpClientConfiguration, ByteArray, ByteArray, TcpClient>(
+) : SimpleSocketClientStep<I, ByteArray, TcpClientConfiguration, ByteArray, ByteArray, ByteArrayRequestBuilder, TcpClient>(
     id,
     retryPolicy,
-    ioCoroutineContext,
+    ByteArrayRequestBuilderImpl,
     requestFactory,
     clientConfiguration,
     "tcp",
