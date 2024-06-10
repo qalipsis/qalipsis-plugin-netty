@@ -16,7 +16,7 @@
 
 package io.qalipsis.plugins.netty.mqtt.publisher
 
-import io.micrometer.core.instrument.Counter
+import io.qalipsis.api.meters.Counter
 
 /**
  * Record the metrics of the publisher.
