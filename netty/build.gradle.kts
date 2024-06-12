@@ -40,6 +40,11 @@ tasks.withType<Test> {
     // systemProperties("io.netty.leakDetectionLevel" to "paranoid")
 }
 
+kapt {
+    correctErrorTypes = true
+    useBuildCache = false
+}
+
 allOpen {
     annotations(
         "io.micronaut.aop.Around",

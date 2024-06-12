@@ -19,7 +19,12 @@ package io.qalipsis.plugins.netty.proxy.server.handlers
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
-import io.netty.handler.codec.http.*
+import io.netty.handler.codec.http.DefaultFullHttpResponse
+import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.HttpMethod
+import io.netty.handler.codec.http.HttpObjectAggregator
+import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpServerCodec
 import io.netty.util.ReferenceCountUtil
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.plugins.netty.proxy.server.Handler

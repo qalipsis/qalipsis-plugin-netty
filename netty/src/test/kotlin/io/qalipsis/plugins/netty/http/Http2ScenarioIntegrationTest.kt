@@ -27,6 +27,7 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import kotlin.math.pow
 
 /**
  *
@@ -91,11 +92,17 @@ class Http2ScenarioIntegrationTest {
 
         @Container
         @JvmStatic
-        val container = GenericContainer<Nothing>("aerisconsulting/http-punching-ball").apply {
+        val container = GenericContainer<Nothing>("aerisconsulting/http-punching-ball:1.0.1").apply {
             withCommand("--https")
             withExposedPorts(8080, 8443)
+            withCreateContainerCmdModifier { cmd ->
+                cmd
+                    //.withPlatform("linux/amd64")
+                    .hostConfig!!
+                    .withMemory(128 * 512.0.pow(2).toLong())
+                    .withCpuCount(2)
+            }
             waitingFor(HostPortWaitStrategy())
-            withCreateContainerCmdModifier { cmd -> cmd.withPlatform("linux/amd64") }
         }
 
         private val log = logger()
