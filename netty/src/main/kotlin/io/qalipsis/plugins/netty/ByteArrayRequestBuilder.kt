@@ -16,7 +16,7 @@
 
 package io.qalipsis.plugins.netty
 
-import java.util.Base64
+import java.util.*
 
 /**
  * Builder for TCP and UDP requests.

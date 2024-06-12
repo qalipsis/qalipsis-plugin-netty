@@ -16,8 +16,6 @@
 
 package io.qalipsis.plugins.netty.http
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.runtime.test.QalipsisTestRunner
 import org.junit.jupiter.api.AfterEach
@@ -39,11 +37,6 @@ import kotlin.math.pow
 class Http1ScenarioIntegrationTest {
 
     private var serverPort = -1
-
-    val jsonMapper = jacksonMapperBuilder().also {
-        it.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        it.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
-    }.build()
 
     private lateinit var statsClient: HttpPunchingBallStatsClient
 
@@ -99,13 +92,16 @@ class Http1ScenarioIntegrationTest {
 
         @Container
         @JvmStatic
-        val container = GenericContainer<Nothing>("aerisconsulting/http-punching-ball").apply {
+        val container = GenericContainer<Nothing>("aerisconsulting/http-punching-ball:1.0.1").apply {
             withExposedPorts(8080)
-            withCreateContainerCmdModifier {
-                it.hostConfig!!.withMemory(128 * 1024.0.pow(2).toLong()).withCpuCount(2)
+            withCreateContainerCmdModifier { cmd ->
+                cmd
+                    //.withPlatform("linux/amd64")
+                    .hostConfig!!
+                    .withMemory(128 * 512.0.pow(2).toLong())
+                    .withCpuCount(2)
             }
             waitingFor(HostPortWaitStrategy())
-            withCreateContainerCmdModifier { cmd -> cmd.withPlatform("linux/amd64") }
         }
 
         private val log = logger()
