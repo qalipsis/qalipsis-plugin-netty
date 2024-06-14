@@ -22,8 +22,6 @@ import io.qalipsis.api.context.StepName
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.api.steps.ErrorProcessingStep
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Superclass to close a connection that was created in an earlier step and kept open.
@@ -32,7 +30,6 @@ import kotlin.coroutines.CoroutineContext
  */
 internal abstract class CloseSocketClientStep<I>(
     id: StepName,
-    private val ioCoroutineContext: CoroutineContext,
     private val connectionOwner: SocketClientStep<*, *, *, *>
 ) : AbstractStep<I, I>(id, null), ErrorProcessingStep<I, I> {
 
@@ -48,11 +45,9 @@ internal abstract class CloseSocketClientStep<I>(
     override suspend fun discard(minionIds: Collection<MinionId>) {
         log.debug { "Closing the connection" }
         try {
-            withContext(ioCoroutineContext) {
-                minionIds.forEach {
-                    kotlin.runCatching {
-                        connectionOwner.close(it)
-                    }
+            minionIds.forEach {
+                kotlin.runCatching {
+                    connectionOwner.close(it)
                 }
             }
         } catch (e: Exception) {

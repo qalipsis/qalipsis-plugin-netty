@@ -116,7 +116,7 @@ internal class UdpClientStepIntegrationTest {
         val workerGroup = spyk(NativeTransportUtils.getEventLoopGroup())
         every { workerGroupSupplier.getGroup() } returns workerGroup
         val step = UdpClientStep<String>(
-            "", null, this.coroutineContext, { _, input -> input.toByteArray(StandardCharsets.UTF_8) },
+            "", null, { _, input -> input.toByteArray(StandardCharsets.UTF_8) },
             ConnectionConfiguration().also {
                 it.address("localhost", ServerUtils.availableUdpPort())
             },
@@ -164,7 +164,6 @@ internal class UdpClientStepIntegrationTest {
         return UdpClientStep(
             "",
             null,
-            ioCoroutineScope.coroutineContext,
             { _, input -> input.toByteArray(StandardCharsets.UTF_8) },
             ConnectionConfiguration()
                 .also { config ->

@@ -40,7 +40,7 @@ internal class CloseHttpClientStepTest {
     @Test
     internal fun `should close the actual http step when the tail is found and forward the input`() =
         testDispatcherProvider.runTest {
-            val step = CloseHttpClientStep<String>("", this.coroutineContext, simpleHttpClientStep)
+            val step = CloseHttpClientStep<String>("", simpleHttpClientStep)
 
             step.discard(listOf("minion-1", "minion-2"))
 
@@ -53,7 +53,7 @@ internal class CloseHttpClientStepTest {
 
     @Test
     internal fun `should not forward the input when there is none`() = testDispatcherProvider.runTest {
-        val step = CloseHttpClientStep<String>("", this.coroutineContext, simpleHttpClientStep)
+        val step = CloseHttpClientStep<String>("", simpleHttpClientStep)
         val ctx = StepTestHelper.createStepContext<String, String>()
         ctx.isTail = true
 
@@ -66,7 +66,7 @@ internal class CloseHttpClientStepTest {
     @Test
     internal fun `should forward the input when there is one`() =
         testDispatcherProvider.runTest {
-            val step = CloseHttpClientStep<String>("", this.coroutineContext, simpleHttpClientStep)
+            val step = CloseHttpClientStep<String>("", simpleHttpClientStep)
             val ctx = StepTestHelper.createStepContext<String, String>(input = "This is a test")
             ctx.isTail = true
 

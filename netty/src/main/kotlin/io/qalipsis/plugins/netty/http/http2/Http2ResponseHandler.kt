@@ -23,8 +23,7 @@ import io.netty.util.ReferenceCountUtil
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.sync.ImmutableSlot
 import io.qalipsis.plugins.netty.http.client.monitoring.HttpStepContextBasedSocketMonitoringCollector
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Handler for responses for HTTP 2.0.
@@ -33,8 +32,7 @@ import kotlinx.coroutines.launch
  */
 internal class Http2ResponseHandler(
     private val responseSlot: ImmutableSlot<Result<HttpResponse>>,
-    private val monitoringCollector: HttpStepContextBasedSocketMonitoringCollector,
-    private val ioCoroutineScope: CoroutineScope
+    private val monitoringCollector: HttpStepContextBasedSocketMonitoringCollector
 ) : SimpleChannelInboundHandler<HttpResponse>() {
 
     override fun channelRead0(ctx: ChannelHandlerContext, msg: HttpResponse) {
@@ -44,14 +42,14 @@ internal class Http2ResponseHandler(
 
         monitoringCollector.recordReceptionComplete()
         monitoringCollector.recordHttpStatus(msg.status())
-        ioCoroutineScope.launch {
+        runBlocking {
             responseSlot.set(Result.success(msg))
         }
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         log.trace(cause) { "An exception occurred while processing the HTTP 2.0 response: ${cause.message}" }
-        ioCoroutineScope.launch {
+        runBlocking {
             responseSlot.set(Result.failure(cause))
         }
     }

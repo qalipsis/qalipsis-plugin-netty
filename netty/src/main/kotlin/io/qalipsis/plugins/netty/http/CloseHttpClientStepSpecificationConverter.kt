@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.http
 
-import io.qalipsis.api.Executors
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.exceptions.InvalidSpecificationException
 import io.qalipsis.api.logging.LoggerHelper.logger
@@ -26,8 +25,6 @@ import io.qalipsis.api.steps.StepDecorator
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.api.steps.StepSpecificationConverter
 import io.qalipsis.plugins.netty.http.spec.CloseHttpClientStepSpecification
-import jakarta.inject.Named
-import kotlin.coroutines.CoroutineContext
 
 /**
  * [StepSpecificationConverter] from [CloseHttpClientStepSpecification] to [CloseHttpClientStep].
@@ -35,9 +32,7 @@ import kotlin.coroutines.CoroutineContext
  * @author Eric Jessé
  */
 @StepConverter
-internal class CloseHttpClientStepSpecificationConverter(
-    @Named(Executors.IO_EXECUTOR_NAME) private val ioCoroutineContext: CoroutineContext
-) :
+internal class CloseHttpClientStepSpecificationConverter :
     StepSpecificationConverter<CloseHttpClientStepSpecification<*>> {
 
     override fun support(stepSpecification: StepSpecification<*, *, *>): Boolean {
@@ -55,7 +50,7 @@ internal class CloseHttpClientStepSpecificationConverter(
 
         connectionOwner.keepOpen()
 
-        val step = CloseHttpClientStep<I>(spec.name, ioCoroutineContext, connectionOwner)
+        val step = CloseHttpClientStep<I>(spec.name, connectionOwner)
         creationContext.createdStep(step)
     }
 
@@ -68,6 +63,7 @@ internal class CloseHttpClientStepSpecificationConverter(
                 // We can chain the names from step to step.
                 foundStep.connectionOwner
             }
+
             is HttpClientStep<*, *> -> foundStep
             is StepDecorator<*, *> -> findHttpClientStep(foundStep.decorated)
             else -> null

@@ -34,9 +34,7 @@ import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringColl
 import io.qalipsis.plugins.netty.socket.RequestWriter
 import io.qalipsis.plugins.netty.socket.SocketClient
 import io.qalipsis.plugins.netty.socket.SocketMonitoringCollector
-import kotlinx.coroutines.CoroutineScope
 import java.nio.channels.ClosedChannelException
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Netty long-live HTTP client, that remains open until it is manually closed.
@@ -45,12 +43,9 @@ import kotlin.coroutines.CoroutineContext
  */
 internal class HttpClient(
     plannedUsages: Long = 1,
-    private val ioCoroutineScope: CoroutineScope,
-    ioCoroutineContext: CoroutineContext,
     onClose: HttpClient.() -> Unit = {}
 ) : SocketClient<HttpClientConfiguration, io.qalipsis.plugins.netty.http.request.HttpRequest<*>, HttpResponse, HttpClient>(
     plannedUsages,
-    ioCoroutineContext,
     onClose
 ) {
 
@@ -75,8 +70,7 @@ internal class HttpClient(
                 Http1ChannelInitializer(
                     clientConfiguration,
                     monitoringCollector,
-                    connectionReadyLatch,
-                    ioCoroutineScope
+                    connectionReadyLatch
                 )
             }
             HttpVersion.HTTP_2_0 -> {
@@ -86,8 +80,7 @@ internal class HttpClient(
                 Http2ChannelInitializer(
                     clientConfiguration,
                     monitoringCollector,
-                    connectionReadyLatch,
-                    ioCoroutineScope
+                    connectionReadyLatch
                 )
             }
         }

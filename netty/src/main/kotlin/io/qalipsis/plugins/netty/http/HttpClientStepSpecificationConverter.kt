@@ -28,7 +28,6 @@ import io.qalipsis.plugins.netty.http.response.HttpBodyDeserializer
 import io.qalipsis.plugins.netty.http.response.ResponseConverter
 import io.qalipsis.plugins.netty.http.spec.HttpClientStepSpecificationImpl
 import jakarta.inject.Named
-import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -43,7 +42,6 @@ internal class HttpClientStepSpecificationConverter(
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
     private val eventsLogger: EventsLogger,
     private val meterRegistry: CampaignMeterRegistry,
-    @Named(Executors.IO_EXECUTOR_NAME) private val ioCoroutineScope: CoroutineScope,
     @Named(Executors.IO_EXECUTOR_NAME) private val ioCoroutineContext: CoroutineContext
 ) : StepSpecificationConverter<HttpClientStepSpecificationImpl<*, *>> {
 
@@ -61,7 +59,6 @@ internal class HttpClientStepSpecificationConverter(
                 spec.name,
                 spec.retryPolicy,
                 ioCoroutineContext,
-                ioCoroutineScope,
                 spec.requestFactory,
                 spec.connectionConfiguration,
                 poolConfiguration,
@@ -73,8 +70,6 @@ internal class HttpClientStepSpecificationConverter(
         } ?: SimpleHttpClientStep<I, O>(
             spec.name,
             spec.retryPolicy,
-            ioCoroutineScope,
-            ioCoroutineContext,
             spec.requestFactory,
             spec.connectionConfiguration,
             eventLoopGroupSupplier,

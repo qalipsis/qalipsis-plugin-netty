@@ -34,7 +34,6 @@ import io.qalipsis.plugins.netty.http.client.HttpChannelInitializer
 import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.http.spec.HttpVersion
 import io.qalipsis.plugins.netty.monitoring.MonitoringCollector
-import kotlinx.coroutines.CoroutineScope
 
 /**
  * Channel initializer for HTTP/1.1 clients.
@@ -44,8 +43,7 @@ import kotlinx.coroutines.CoroutineScope
 internal class Http1ChannelInitializer(
     private val clientConfiguration: HttpClientConfiguration,
     private val monitoringCollector: MonitoringCollector,
-    private val readyLatch: SuspendedCountLatch,
-    private val ioCoroutineScope: CoroutineScope
+    private val readyLatch: SuspendedCountLatch
 ) : HttpChannelInitializer() {
 
     override lateinit var requestExecutionConfigurer: Http1RequestExecutionConfigurer
@@ -70,7 +68,7 @@ internal class Http1ChannelInitializer(
         pipeline.addLast(PipelineHandlerNames.RESPONSE_DECOMPRESSOR, HttpContentDecompressor())
 
         pipeline.addLast(AGGREGATOR_HANDLER, Http1ComposableObjectAggregator(clientConfiguration.maxContentLength))
-        requestExecutionConfigurer = Http1RequestExecutionConfigurer(clientConfiguration, pipeline, ioCoroutineScope)
+        requestExecutionConfigurer = Http1RequestExecutionConfigurer(clientConfiguration, pipeline)
     }
 
     private fun configureSsl(channel: SocketChannel, tlsConfiguration: TlsConfiguration) {

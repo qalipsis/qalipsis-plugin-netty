@@ -63,7 +63,6 @@ internal class TcpClientStepSpecificationConverter(
         } ?: SimpleTcpClientStep(
             spec.name,
             spec.retryPolicy,
-            ioCoroutineContext,
             spec.requestFactory,
             spec.connectionConfiguration,
             eventLoopGroupSupplier,

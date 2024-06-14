@@ -46,8 +46,6 @@ import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringColl
 import io.qalipsis.plugins.netty.socket.SocketClient
 import io.qalipsis.plugins.netty.socket.SocketClientStep
 import io.qalipsis.plugins.netty.tcp.spec.SocketClientPoolConfiguration
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpResponse
@@ -61,7 +59,6 @@ internal class PooledHttpClientStep<I, O>(
     id: StepName,
     retryPolicy: RetryPolicy?,
     private val ioCoroutineContext: CoroutineContext,
-    private val ioCoroutineScope: CoroutineScope,
     private val requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, I) -> HttpRequest<*>,
     private val clientConfiguration: HttpClientConfiguration,
     private val poolConfiguration: SocketClientPoolConfiguration,
@@ -104,10 +101,8 @@ internal class PooledHttpClientStep<I, O>(
     }
 
     private suspend fun createClient(connection: HttpClientConfiguration, workerGroup: EventLoopGroup): HttpClient {
-        val cli = HttpClient(Long.MAX_VALUE, ioCoroutineScope, ioCoroutineContext)
-        withContext(ioCoroutineContext) {
-            cli.open(connection, workerGroup, stepMonitoringCollector)
-        }
+        val cli = HttpClient(Long.MAX_VALUE)
+        cli.open(connection, workerGroup, stepMonitoringCollector)
         return cli
     }
 
@@ -120,9 +115,8 @@ internal class PooledHttpClientStep<I, O>(
     override suspend fun execute(context: StepContext<I, RequestResult<I, QalipsisHttpResponse<O>, *>>) {
         val monitoringCollector = HttpStepContextBasedSocketMonitoringCollector(context, eventsLogger, meterRegistry)
         val input = context.receive()
-        val response = withContext(ioCoroutineContext) {
+        val response =
             execute(monitoringCollector, context, input, HttpRequestBuilderImpl.requestFactory(context, input))
-        }
         context.send(monitoringCollector.toResult(input, responseConverter.convert(response), null))
     }
 

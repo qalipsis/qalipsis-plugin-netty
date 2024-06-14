@@ -130,8 +130,6 @@ internal class SimpleHttpClientStepTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             config,
             workerGroupSupplier,
@@ -153,8 +151,6 @@ internal class SimpleHttpClientStepTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             connectionConfiguration,
             workerGroupSupplier,
@@ -184,8 +180,6 @@ internal class SimpleHttpClientStepTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             connectionConfiguration,
             workerGroupSupplier,
@@ -239,8 +233,6 @@ internal class SimpleHttpClientStepTest {
             SimpleHttpClientStep<String, String>(
                 "my-step",
                 null,
-                this,
-                this.coroutineContext,
                 requestFactory,
                 connectionConfiguration,
                 workerGroupSupplier,
@@ -287,8 +279,6 @@ internal class SimpleHttpClientStepTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             connectionConfiguration,
             workerGroupSupplier,
@@ -320,8 +310,6 @@ internal class SimpleHttpClientStepTest {
                 SimpleHttpClientStep<String, String>(
                     "my-step",
                     null,
-                    this,
-                    this.coroutineContext,
                     { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
                     connectionConfiguration,
                     workerGroupSupplier,
@@ -383,8 +371,6 @@ internal class SimpleHttpClientStepTest {
                 SimpleHttpClientStep<String, String>(
                     "my-step",
                     null,
-                    this,
-                    this.coroutineContext,
                     { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
                     connectionConfiguration,
                     workerGroupSupplier,
@@ -427,8 +413,6 @@ internal class SimpleHttpClientStepTest {
             SimpleHttpClientStep<String, String>(
                 "my-step",
                 null,
-                this,
-                this.coroutineContext,
                 { _, _ -> request },
                 connectionConfiguration,
                 workerGroupSupplier,
@@ -473,8 +457,6 @@ internal class SimpleHttpClientStepTest {
             SimpleHttpClientStep<String, String>(
                 "my-step",
                 null,
-                this,
-                this.coroutineContext,
                 { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
                 connectionConfiguration,
                 workerGroupSupplier,
@@ -519,8 +501,6 @@ internal class SimpleHttpClientStepTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             connectionConfiguration,
             workerGroupSupplier,
@@ -563,8 +543,6 @@ internal class SimpleHttpClientStepTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             connectionConfiguration,
             workerGroupSupplier,

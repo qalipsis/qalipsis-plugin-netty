@@ -26,8 +26,6 @@ import io.qalipsis.api.retry.RetryPolicy
 import io.qalipsis.api.steps.AbstractStep
 import io.qalipsis.plugins.netty.EventLoopGroupSupplier
 import io.qalipsis.plugins.netty.configuration.ConnectionConfiguration
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Step to send and receive data using UDP.
@@ -37,7 +35,6 @@ import kotlin.coroutines.CoroutineContext
 internal class UdpClientStep<I>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    private val ioCoroutineContext: CoroutineContext,
     private val requestFactory: suspend (StepContext<*, *>, I) -> ByteArray,
     private val connectionConfiguration: ConnectionConfiguration,
     private val eventLoopGroupSupplier: EventLoopGroupSupplier,
@@ -66,9 +63,7 @@ internal class UdpClientStep<I>(
 
         val udpResult = try {
             val request = requestFactory(context, input)
-            val response = withContext(ioCoroutineContext) {
-                client.execute(context, request, monitoringCollector)
-            }
+            val response = client.execute(context, request, monitoringCollector)
             monitoringCollector.toResult(input, response, null)
         } catch (e: Exception) {
             // The exception is only considered if not already set in the context.

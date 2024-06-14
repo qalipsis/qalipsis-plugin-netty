@@ -16,7 +16,6 @@
 
 package io.qalipsis.plugins.netty.tcp
 
-import io.qalipsis.api.Executors
 import io.qalipsis.api.annotations.StepConverter
 import io.qalipsis.api.exceptions.InvalidSpecificationException
 import io.qalipsis.api.logging.LoggerHelper.logger
@@ -26,8 +25,6 @@ import io.qalipsis.api.steps.StepDecorator
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.api.steps.StepSpecificationConverter
 import io.qalipsis.plugins.netty.tcp.spec.CloseTcpClientStepSpecification
-import jakarta.inject.Named
-import kotlin.coroutines.CoroutineContext
 
 /**
  * [StepSpecificationConverter] from [CloseTcpClientStepSpecification] to [CloseTcpClientStep].
@@ -35,9 +32,8 @@ import kotlin.coroutines.CoroutineContext
  * @author Eric Jessé
  */
 @StepConverter
-internal class CloseTcpClientStepSpecificationConverter(
-    @Named(Executors.IO_EXECUTOR_NAME) private val ioCoroutineContext: CoroutineContext
-) : StepSpecificationConverter<CloseTcpClientStepSpecification<*>> {
+internal class CloseTcpClientStepSpecificationConverter :
+    StepSpecificationConverter<CloseTcpClientStepSpecification<*>> {
 
     override fun support(stepSpecification: StepSpecification<*, *, *>): Boolean {
         return (stepSpecification is CloseTcpClientStepSpecification)
@@ -54,7 +50,7 @@ internal class CloseTcpClientStepSpecificationConverter(
 
         connectionOwner.keepOpen()
 
-        val step = CloseTcpClientStep<I>(spec.name, ioCoroutineContext, connectionOwner)
+        val step = CloseTcpClientStep<I>(spec.name, connectionOwner)
         creationContext.createdStep(step)
     }
 

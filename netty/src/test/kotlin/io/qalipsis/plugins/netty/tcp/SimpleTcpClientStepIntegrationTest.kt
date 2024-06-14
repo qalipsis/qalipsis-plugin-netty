@@ -101,7 +101,6 @@ internal class SimpleTcpClientStepIntegrationTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             TcpClientConfiguration().apply {
                 address("localhost", plainServer.port)
@@ -165,7 +164,6 @@ internal class SimpleTcpClientStepIntegrationTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             TcpClientConfiguration().apply {
                 address("localhost", plainServer.port)
