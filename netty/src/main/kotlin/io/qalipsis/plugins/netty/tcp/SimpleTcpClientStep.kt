@@ -30,7 +30,6 @@ import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringColl
 import io.qalipsis.plugins.netty.socket.SimpleSocketClientStep
 import io.qalipsis.plugins.netty.tcp.client.TcpClient
 import io.qalipsis.plugins.netty.tcp.spec.TcpClientConfiguration
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Step to send and receive data using TCP, using a per-minion connection strategy.
@@ -40,7 +39,6 @@ import kotlin.coroutines.CoroutineContext
 internal class SimpleTcpClientStep<I>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    private val ioCoroutineContext: CoroutineContext,
     requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, I) -> ByteArray,
     private val clientConfiguration: TcpClientConfiguration,
     eventLoopGroupSupplier: EventLoopGroupSupplier,
@@ -65,7 +63,7 @@ internal class SimpleTcpClientStep<I>(
         log.trace { "Creating the TCP client for minion $minionId" }
         val numberOfPlannedUsages =
             if (clientConfiguration.keepConnectionAlive) Long.MAX_VALUE else usagesCount.get().toLong()
-        val cli = TcpClient(numberOfPlannedUsages, ioCoroutineContext) {
+        val cli = TcpClient(numberOfPlannedUsages) {
             // When closing, remove the client and the usage counter from the cache.
             clients.remove(minionId)?.close()
             clientsInUse.remove(minionId)

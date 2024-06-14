@@ -29,7 +29,6 @@ import io.qalipsis.plugins.netty.http.request.InternalHttpRequest
 import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.socket.RequestWriter
-import kotlinx.coroutines.CoroutineScope
 
 
 /**
@@ -39,8 +38,7 @@ import kotlinx.coroutines.CoroutineScope
  */
 internal class Http1RequestExecutionConfigurer(
     private val clientConfiguration: HttpClientConfiguration,
-    private val pipeline: ChannelPipeline,
-    private val ioCoroutineScope: CoroutineScope
+    private val pipeline: ChannelPipeline
 ) : HttpRequestExecutionConfigurer {
 
     override fun configure(
@@ -57,16 +55,14 @@ internal class Http1RequestExecutionConfigurer(
             HttpPipelineNames.INBOUND_HANDLER,
             Http1ResponseHandler(
                 responseSlot,
-                monitoringCollector as HttpStepContextBasedSocketMonitoringCollector,
-                ioCoroutineScope
+                monitoringCollector as HttpStepContextBasedSocketMonitoringCollector
             )
         )
 
         return Http1RequestWriter(
             (request as InternalHttpRequest<*, *>).toNettyRequest(clientConfiguration),
             responseSlot,
-            monitoringCollector,
-            ioCoroutineScope
+            monitoringCollector
         )
     }
 }

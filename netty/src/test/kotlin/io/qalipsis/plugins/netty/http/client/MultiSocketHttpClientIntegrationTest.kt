@@ -113,7 +113,7 @@ internal class MultiSocketHttpClientIntegrationTest {
     internal fun `should forward when response is redirection and following is active`() = testDispatcherProvider.run {
         // given
         val monitoringCollector = HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry)
-        val client = MultiSocketHttpClient(1, this, this.coroutineContext).also(clientsToClean::add)
+        val client = MultiSocketHttpClient(1).also(clientsToClean::add)
         client.open(
             HttpClientConfiguration().apply {
                 url(forwardingHttpServer.url)
@@ -147,7 +147,7 @@ internal class MultiSocketHttpClientIntegrationTest {
         testDispatcherProvider.run {
             // given
             val monitoringCollector = HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry)
-            val client = MultiSocketHttpClient(1, this, this.coroutineContext).also(clientsToClean::add)
+            val client = MultiSocketHttpClient(1).also(clientsToClean::add)
             client.open(
                 HttpClientConfiguration().apply {
                     url(forwardingHttpServer.url)
@@ -181,7 +181,7 @@ internal class MultiSocketHttpClientIntegrationTest {
         testDispatcherProvider.run {
             // given
             val monitoringCollector = HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry)
-            val client = MultiSocketHttpClient(1, this, this.coroutineContext).also(clientsToClean::add)
+            val client = MultiSocketHttpClient(1).also(clientsToClean::add)
             client.open(
                 HttpClientConfiguration().apply {
                     url(forwardingHttpServer.url)

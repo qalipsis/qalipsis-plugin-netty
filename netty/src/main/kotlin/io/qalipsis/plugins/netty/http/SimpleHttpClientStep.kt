@@ -38,8 +38,6 @@ import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.socket.SimpleSocketClientStep
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
-import kotlinx.coroutines.CoroutineScope
-import kotlin.coroutines.CoroutineContext
 import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpResponse
 
 /**
@@ -50,8 +48,6 @@ import io.qalipsis.plugins.netty.http.response.HttpResponse as QalipsisHttpRespo
 internal class SimpleHttpClientStep<I, O>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    private val ioCoroutineScope: CoroutineScope,
-    private val ioCoroutineContext: CoroutineContext,
     requestFactory: suspend HttpRequestBuilder.(StepContext<*, *>, I) -> HttpRequest<*>,
     private val clientConfiguration: HttpClientConfiguration,
     eventLoopGroupSupplier: EventLoopGroupSupplier,
@@ -77,7 +73,7 @@ internal class SimpleHttpClientStep<I, O>(
         log.trace { "Creating the HTTP client for minion $minionId" }
         val numberOfPlannedUsages =
             if (clientConfiguration.keepConnectionAlive) Long.MAX_VALUE else usagesCount.get().toLong()
-        val cli = MultiSocketHttpClient(numberOfPlannedUsages, ioCoroutineScope, ioCoroutineContext) {
+        val cli = MultiSocketHttpClient(numberOfPlannedUsages) {
             // When closing, remove the client and the usage counter from the cache.
             clients.remove(minionId)?.close()
             clientsInUse.remove(minionId)

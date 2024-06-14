@@ -118,8 +118,6 @@ internal class HttpClientStepSpecificationConverterTest :
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(SimpleHttpClientStep::class).all {
             prop(SimpleHttpClientStep<*, *>::name).isEqualTo("my-step")
             prop(SimpleHttpClientStep<*, *>::retryPolicy).isSameAs(mockedRetryPolicy)
-            prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
-            prop("ioCoroutineScope").isSameAs(ioCoroutineScope)
             prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
             prop("requestFactory").isSameAs(requestSpecification)
             prop("clientConfiguration").isSameAs(spec.connectionConfiguration)
@@ -156,8 +154,6 @@ internal class HttpClientStepSpecificationConverterTest :
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(SimpleHttpClientStep::class).all {
             prop(SimpleHttpClientStep<*, *>::name).isNotNull()
             prop(SimpleHttpClientStep<*, *>::retryPolicy).isNull()
-            prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
-            prop("ioCoroutineScope").isSameAs(ioCoroutineScope)
             prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
             prop("requestFactory").isSameAs(requestSpecification)
             prop("clientConfiguration").isSameAs(spec.connectionConfiguration)
@@ -201,8 +197,6 @@ internal class HttpClientStepSpecificationConverterTest :
         assertThat(creationContext.createdStep).isNotNull().isInstanceOf(PooledHttpClientStep::class).all {
             prop(PooledHttpClientStep<*, *>::name).isEqualTo("my-step")
             prop(PooledHttpClientStep<*, *>::retryPolicy).isSameAs(mockedRetryPolicy)
-            prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
-            prop("ioCoroutineScope").isSameAs(ioCoroutineScope)
             prop("eventLoopGroupSupplier").isSameAs(eventLoopGroupSupplier)
             prop("requestFactory").isSameAs(requestSpecification)
             prop("clientConfiguration").isSameAs(spec.connectionConfiguration)

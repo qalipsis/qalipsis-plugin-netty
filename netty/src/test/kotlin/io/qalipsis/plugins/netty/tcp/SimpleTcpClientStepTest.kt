@@ -106,7 +106,6 @@ internal class SimpleTcpClientStepTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             config,
             workerGroupSupplier,
@@ -128,7 +127,6 @@ internal class SimpleTcpClientStepTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             connectionConfiguration,
             workerGroupSupplier,
@@ -152,7 +150,6 @@ internal class SimpleTcpClientStepTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             connectionConfiguration,
             workerGroupSupplier,
@@ -202,7 +199,6 @@ internal class SimpleTcpClientStepTest {
             SimpleTcpClientStep(
                 "my-step",
                 null,
-                this.coroutineContext,
                 requestFactory,
                 connectionConfiguration,
                 workerGroupSupplier,
@@ -244,7 +240,6 @@ internal class SimpleTcpClientStepTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             connectionConfiguration,
             workerGroupSupplier,
@@ -274,7 +269,6 @@ internal class SimpleTcpClientStepTest {
                 SimpleTcpClientStep<String>(
                     "my-step",
                     null,
-                    this.coroutineContext,
                     { _, _ -> ByteArray(0) },
                     connectionConfiguration,
                     workerGroupSupplier,
@@ -315,44 +309,44 @@ internal class SimpleTcpClientStepTest {
         }
 
     @Test
-    fun `should throws an exception and close the client when executing returns an exception`() = testDispatcherProvider.run {
-        val request = ByteArray(0)
-        val monitoringCollector = relaxedMockk<StepContextBasedSocketMonitoringCollector>()
-        val input = RandomStringUtils.randomAlphanumeric(10)
-        val ctx = StepTestHelper.createStepContext<String, ConnectionAndRequestResult<String, ByteArray>>(
-            input = "This is a test",
-            minionId = "client-1"
-        )
-        val client = relaxedMockk<TcpClient> {
-            coEvery {
-                execute(refEq(ctx), eq(request), refEq(monitoringCollector))
-            } throws RuntimeException()
-            every { isOpen } returns false
-        }
-        val step = spyk(
-            SimpleTcpClientStep<String>(
-                "my-step",
-                null,
-                this.coroutineContext,
-                { _, _ -> ByteArray(0) },
-                connectionConfiguration,
-                workerGroupSupplier,
-                eventsLogger,
-                meterRegistry
+    fun `should throws an exception and close the client when executing returns an exception`() =
+        testDispatcherProvider.run {
+            val request = ByteArray(0)
+            val monitoringCollector = relaxedMockk<StepContextBasedSocketMonitoringCollector>()
+            val input = RandomStringUtils.randomAlphanumeric(10)
+            val ctx = StepTestHelper.createStepContext<String, ConnectionAndRequestResult<String, ByteArray>>(
+                input = "This is a test",
+                minionId = "client-1"
             )
-        ) {
-            coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } returns client
-        }
-        step.setProperty("running", true)
+            val client = relaxedMockk<TcpClient> {
+                coEvery {
+                    execute(refEq(ctx), eq(request), refEq(monitoringCollector))
+                } throws RuntimeException()
+                every { isOpen } returns false
+            }
+            val step = spyk(
+                SimpleTcpClientStep<String>(
+                    "my-step",
+                    null,
+                    { _, _ -> ByteArray(0) },
+                    connectionConfiguration,
+                    workerGroupSupplier,
+                    eventsLogger,
+                    meterRegistry
+                )
+            ) {
+                coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } returns client
+            }
+            step.setProperty("running", true)
 
-        // when
-        assertThrows<RuntimeException> {
-            step.execute(monitoringCollector, ctx, input, request)
-        }
+            // when
+            assertThrows<RuntimeException> {
+                step.execute(monitoringCollector, ctx, input, request)
+            }
 
-        // then
-        coVerifyOnce { client.close() }
-    }
+            // then
+            coVerifyOnce { client.close() }
+        }
 
     @Test
     fun `should put the client back to the maps after use`() = testDispatcherProvider.run {
@@ -374,7 +368,6 @@ internal class SimpleTcpClientStepTest {
             SimpleTcpClientStep<String>(
                 "my-step",
                 null,
-                this.coroutineContext,
                 { _, _ -> ByteArray(0) },
                 connectionConfiguration,
                 workerGroupSupplier,
@@ -417,7 +410,6 @@ internal class SimpleTcpClientStepTest {
             SimpleTcpClientStep<String>(
                 "my-step",
                 null,
-                this.coroutineContext,
                 { _, _ -> ByteArray(0) },
                 connectionConfiguration,
                 workerGroupSupplier,
@@ -460,7 +452,6 @@ internal class SimpleTcpClientStepTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             connectionConfiguration,
             workerGroupSupplier,
@@ -501,7 +492,6 @@ internal class SimpleTcpClientStepTest {
         val step = SimpleTcpClientStep<String>(
             "my-step",
             null,
-            this.coroutineContext,
             { _, _ -> ByteArray(0) },
             connectionConfiguration,
             workerGroupSupplier,

@@ -88,7 +88,6 @@ internal class CloseTcpClientStepSpecificationConverterTest :
                     isInstanceOf(CloseTcpClientStep::class)
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("connectionOwner").isSameAs(connectionOwner)
                 }
             }
@@ -120,7 +119,6 @@ internal class CloseTcpClientStepSpecificationConverterTest :
                     isInstanceOf(CloseTcpClientStep::class)
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("connectionOwner").isSameAs(connectionOwner)
                 }
             }
@@ -149,7 +147,6 @@ internal class CloseTcpClientStepSpecificationConverterTest :
                 isInstanceOf(CloseTcpClientStep::class)
                 prop("name").isNotNull()
                 prop("retryPolicy").isNull()
-                prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                 prop("connectionOwner").isSameAs(connectionOwner)
             }
         }

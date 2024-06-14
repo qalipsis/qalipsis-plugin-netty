@@ -32,11 +32,9 @@ import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.socket.SocketClient
 import io.qalipsis.plugins.netty.socket.SocketMonitoringCollector
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.coroutines.CoroutineContext
 
 /**
  * HTTP client able to maintain several [HttpClient] internally. That kind of step is required to support clients
@@ -47,12 +45,8 @@ import kotlin.coroutines.CoroutineContext
  */
 internal class MultiSocketHttpClient(
     plannedUsages: Long = 1,
-    private val ioCoroutineScope: CoroutineScope,
-    private val ioCoroutineContext: CoroutineContext,
     private val onClose: MultiSocketHttpClient.() -> Unit = {}
-) : SocketClient<HttpClientConfiguration, HttpRequest<*>, HttpResponse, MultiSocketHttpClient>(
-    plannedUsages, ioCoroutineContext
-) {
+) : SocketClient<HttpClientConfiguration, HttpRequest<*>, HttpResponse, MultiSocketHttpClient>(plannedUsages) {
 
     private var open = false
 
@@ -106,7 +100,7 @@ internal class MultiSocketHttpClient(
         workerGroup: EventLoopGroup,
         monitoringCollector: SocketMonitoringCollector
     ): Slot<HttpClient> {
-        val client = HttpClient(Long.MAX_VALUE, ioCoroutineScope, ioCoroutineContext) {
+        val client = HttpClient(Long.MAX_VALUE) {
             clients.remove(this.peerIdentifier)
             peerMutexes.remove(this.peerIdentifier)
         }

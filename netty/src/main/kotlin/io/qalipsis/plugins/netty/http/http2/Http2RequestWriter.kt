@@ -23,16 +23,14 @@ import io.qalipsis.plugins.netty.http.client.StreamIdGenerator
 import io.qalipsis.plugins.netty.http.http1.Http1RequestWriter
 import io.qalipsis.plugins.netty.http.spec.HttpVersion
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
-import kotlinx.coroutines.CoroutineScope
 
 internal class Http2RequestWriter(
     request: Any,
     responseSlot: ImmutableSlot<Result<HttpResponse>>,
     monitoringCollector: StepContextBasedSocketMonitoringCollector,
     private val scheme: String,
-    private val streamIdGenerator: StreamIdGenerator<Int>,
-    ioCoroutineScope: CoroutineScope
-) : Http1RequestWriter(request, responseSlot, monitoringCollector, ioCoroutineScope) {
+    private val streamIdGenerator: StreamIdGenerator<Int>
+) : Http1RequestWriter(request, responseSlot, monitoringCollector) {
 
     override val version = HttpVersion.HTTP_2_0
 

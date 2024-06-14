@@ -103,7 +103,6 @@ internal class PooledHttpClientStepIntegrationTest {
             "my-step",
             null,
             this.coroutineContext,
-            this,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             HttpClientConfiguration().apply {
                 url("http://localhost:1")

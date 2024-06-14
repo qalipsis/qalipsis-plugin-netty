@@ -40,7 +40,7 @@ internal class CloseTcpClientStepTest {
     @Test
     internal fun `should close the actual tcp step when the tail is found and forward the input`() =
         testDispatcherProvider.runTest {
-            val step = CloseTcpClientStep<String>("", this.coroutineContext, simpleTcpClientStep)
+            val step = CloseTcpClientStep<String>("", simpleTcpClientStep)
 
             step.discard(listOf("minionId-1", "minionId-2"))
 
@@ -53,7 +53,7 @@ internal class CloseTcpClientStepTest {
 
     @Test
     internal fun `should not forward the input when there is none`() = testDispatcherProvider.runTest {
-        val step = CloseTcpClientStep<String>("", this.coroutineContext, simpleTcpClientStep)
+        val step = CloseTcpClientStep<String>("", simpleTcpClientStep)
         val ctx = StepTestHelper.createStepContext<String, String>()
         ctx.isTail = true
 
@@ -67,7 +67,7 @@ internal class CloseTcpClientStepTest {
     @Test
     internal fun `should forward the input when there is one`() =
         testDispatcherProvider.runTest {
-            val step = CloseTcpClientStep<String>("", this.coroutineContext, simpleTcpClientStep)
+            val step = CloseTcpClientStep<String>("", simpleTcpClientStep)
             val ctx = StepTestHelper.createStepContext<String, String>(input = "This is a test")
             ctx.isTail = true
 

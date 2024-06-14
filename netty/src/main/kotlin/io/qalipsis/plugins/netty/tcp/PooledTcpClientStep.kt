@@ -40,7 +40,7 @@ import kotlin.coroutines.CoroutineContext
 internal class PooledTcpClientStep<I>(
     id: StepName,
     retryPolicy: RetryPolicy?,
-    private val ioCoroutineContext: CoroutineContext,
+    ioCoroutineContext: CoroutineContext,
     requestFactory: suspend ByteArrayRequestBuilder.(StepContext<*, *>, I) -> ByteArray,
     private val clientConfiguration: TcpClientConfiguration,
     poolConfiguration: SocketClientPoolConfiguration,
@@ -61,7 +61,7 @@ internal class PooledTcpClientStep<I>(
 ), TcpClientStep<I, RequestResult<I, ByteArray, *>> {
 
     override suspend fun createClient(workerGroup: EventLoopGroup): TcpClient {
-        val cli = TcpClient(Long.MAX_VALUE, ioCoroutineContext)
+        val cli = TcpClient(Long.MAX_VALUE)
         cli.open(clientConfiguration, workerGroup, stepMonitoringCollector)
         return cli
     }

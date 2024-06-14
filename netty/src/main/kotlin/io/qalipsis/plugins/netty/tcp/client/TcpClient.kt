@@ -27,7 +27,6 @@ import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringColl
 import io.qalipsis.plugins.netty.socket.SocketClient
 import io.qalipsis.plugins.netty.socket.SocketMonitoringCollector
 import io.qalipsis.plugins.netty.tcp.spec.TcpClientConfiguration
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Netty long-live TCP client, that remains open until it is manually closed.
@@ -36,9 +35,8 @@ import kotlin.coroutines.CoroutineContext
  */
 internal class TcpClient(
     plannedUsages: Long = 1,
-    ioCoroutineContext: CoroutineContext,
     onClose: TcpClient.() -> Unit = {}
-) : SocketClient<TcpClientConfiguration, ByteArray, ByteArray, TcpClient>(plannedUsages, ioCoroutineContext, onClose) {
+) : SocketClient<TcpClientConfiguration, ByteArray, ByteArray, TcpClient>(plannedUsages, onClose) {
 
     override suspend fun open(
         clientConfiguration: TcpClientConfiguration,

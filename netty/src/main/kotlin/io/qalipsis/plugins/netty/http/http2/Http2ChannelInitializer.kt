@@ -57,7 +57,6 @@ import io.qalipsis.plugins.netty.http.client.HttpRequestExecutionConfigurer
 import io.qalipsis.plugins.netty.http.http1.Http1ChannelInitializer
 import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.monitoring.MonitoringCollector
-import kotlinx.coroutines.CoroutineScope
 import java.net.InetSocketAddress
 
 /**
@@ -69,8 +68,7 @@ import java.net.InetSocketAddress
 internal class Http2ChannelInitializer(
     private val clientConfiguration: HttpClientConfiguration,
     private val monitoringCollector: MonitoringCollector,
-    private val readyLatch: SuspendedCountLatch,
-    private val ioCoroutineScope: CoroutineScope
+    private val readyLatch: SuspendedCountLatch
 ) : HttpChannelInitializer() {
 
     override lateinit var requestExecutionConfigurer: HttpRequestExecutionConfigurer
@@ -151,7 +149,7 @@ internal class Http2ChannelInitializer(
                     // The pipeline is configured to be used as an HTTP 1 client.
                     readyLatch.blockingIncrement()
                     val http1Initializer =
-                        Http1ChannelInitializer(clientConfiguration, monitoringCollector, readyLatch, ioCoroutineScope)
+                        Http1ChannelInitializer(clientConfiguration, monitoringCollector, readyLatch)
                     http1Initializer.configureEndOfPipeline(pipeline)
                     version = http1Initializer.version
                     requestExecutionConfigurer = http1Initializer.requestExecutionConfigurer
@@ -172,7 +170,7 @@ internal class Http2ChannelInitializer(
     private fun configureEndOfPipeline(pipeline: ChannelPipeline) {
         log.debug { "Configuring the end of HTTP2 pipeline $pipeline" }
         pipeline.addLast(HttpPipelineNames.HTTP2_SETTINGS_HANDLER, Http2SettingsHandler(readyLatch))
-        requestExecutionConfigurer = Http2RequestExecutionConfigurer(clientConfiguration, pipeline, ioCoroutineScope)
+        requestExecutionConfigurer = Http2RequestExecutionConfigurer(clientConfiguration, pipeline)
         readyLatch.blockingDecrement()
     }
 

@@ -127,7 +127,7 @@ internal class TcpClientIntegrationTest {
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
             // when
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             client.open(
                 TcpClientConfiguration().apply {
                     address("localhost", plainServer.port)
@@ -164,7 +164,7 @@ internal class TcpClientIntegrationTest {
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
                 // when
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 client.open(
                     TcpClientConfiguration().apply {
                         address("localhost", plainServer.port)
@@ -223,7 +223,7 @@ internal class TcpClientIntegrationTest {
             // given
             val monitoringCollector =
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             val exception = assertThrows<ConnectException> {
                 client.open(
                     TcpClientConfiguration().apply {
@@ -256,7 +256,7 @@ internal class TcpClientIntegrationTest {
             val tempTcpServer = TcpServer.new(handler = SERVER_HANDLER).also { it.start() }
             val monitoringCollector =
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
 
             client.open(
                 TcpClientConfiguration().apply {
@@ -298,7 +298,7 @@ internal class TcpClientIntegrationTest {
             }
             val monitoringCollector =
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
 
             // when
             client.open(
@@ -349,7 +349,7 @@ internal class TcpClientIntegrationTest {
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
             // when
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             client.open(
                 TcpClientConfiguration().apply {
                     address("localhost", tlsServer.port)
@@ -390,7 +390,7 @@ internal class TcpClientIntegrationTest {
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
                 // when
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 client.open(
                     TcpClientConfiguration().apply {
                         address("localhost", tlsServer.port)
@@ -453,7 +453,7 @@ internal class TcpClientIntegrationTest {
             // given
             val monitoringCollector =
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             val exception = assertThrows<ConnectException> {
                 client.open(
                     TcpClientConfiguration().apply {
@@ -490,7 +490,7 @@ internal class TcpClientIntegrationTest {
                 // given
                 val monitoringCollector =
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 val exception = assertThrows<SSLHandshakeException> {
                     client.open(
                         TcpClientConfiguration().apply {
@@ -526,7 +526,7 @@ internal class TcpClientIntegrationTest {
                 // given
                 val monitoringCollector =
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 client.open(
                     TcpClientConfiguration().apply {
                         address("localhost", tlsServer.port)
@@ -576,7 +576,7 @@ internal class TcpClientIntegrationTest {
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
             // when
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             client.open(
                 TcpClientConfiguration().apply {
                     address("localhost", plainServer.port)
@@ -617,7 +617,7 @@ internal class TcpClientIntegrationTest {
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
                 // when
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 client.open(
                     TcpClientConfiguration().apply {
                         address("localhost", plainServer.port)
@@ -683,7 +683,7 @@ internal class TcpClientIntegrationTest {
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
             // when
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             client.open(
                 TcpClientConfiguration().apply {
                     address("localhost", plainServer.port)
@@ -724,7 +724,7 @@ internal class TcpClientIntegrationTest {
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
                 // when
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 client.open(
                     TcpClientConfiguration().apply {
                         address("localhost", plainServer.port)
@@ -788,7 +788,7 @@ internal class TcpClientIntegrationTest {
                 // given
                 val monitoringCollector =
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 val exception = assertThrows<ConnectException> {
                     client.open(
                         TcpClientConfiguration().apply {
@@ -830,7 +830,7 @@ internal class TcpClientIntegrationTest {
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
             // when
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             client.open(
                 TcpClientConfiguration().apply {
                     address("localhost", tlsServer.port)
@@ -875,7 +875,7 @@ internal class TcpClientIntegrationTest {
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
                 // when
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 client.open(
                     TcpClientConfiguration().apply {
                         address("localhost", tlsServer.port)
@@ -944,7 +944,7 @@ internal class TcpClientIntegrationTest {
                 spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
             // when
-            val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+            val client = TcpClient(3).also(clientsToClean::add)
             client.open(
                 TcpClientConfiguration().apply {
                     address("localhost", tlsServer.port)
@@ -989,7 +989,7 @@ internal class TcpClientIntegrationTest {
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
 
                 // when
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 client.open(
                     TcpClientConfiguration().apply {
                         address("localhost", tlsServer.port)
@@ -1057,7 +1057,7 @@ internal class TcpClientIntegrationTest {
                 // given
                 val monitoringCollector =
                     spyk(StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test"))
-                val client = TcpClient(3, this.coroutineContext).also(clientsToClean::add)
+                val client = TcpClient(3).also(clientsToClean::add)
                 val exception = assertThrows<ConnectException> {
                     client.open(
                         TcpClientConfiguration().apply {

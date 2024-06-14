@@ -27,15 +27,13 @@ import io.qalipsis.plugins.netty.http.HttpPipelineNames
 import io.qalipsis.plugins.netty.http.spec.HttpVersion
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.socket.RequestWriter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.net.URI
 
 internal open class Http1RequestWriter(
     request: Any,
     private val responseSlot: ImmutableSlot<Result<HttpResponse>>,
     private val monitoringCollector: StepContextBasedSocketMonitoringCollector,
-    private val ioCoroutineScope: CoroutineScope
 ) : RequestWriter {
 
     private val encoder: HttpPostRequestEncoder? = request as? HttpPostRequestEncoder
@@ -65,7 +63,7 @@ internal open class Http1RequestWriter(
             if (!it.isSuccess) {
                 monitoringCollector.recordSentRequestFailure(it.cause())
                 if (responseSlot.isEmpty()) {
-                    ioCoroutineScope.launch {
+                    runBlocking {
                         responseSlot.set(Result.failure(it.cause()))
                     }
                 }

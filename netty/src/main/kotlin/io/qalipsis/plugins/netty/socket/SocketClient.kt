@@ -33,13 +33,11 @@ import io.qalipsis.plugins.netty.NativeTransportUtils
 import io.qalipsis.plugins.netty.asSuspended
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.withContext
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.TimeoutException
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Parent client of socket-based Netty clients.
@@ -50,7 +48,6 @@ import kotlin.coroutines.CoroutineContext
  */
 internal abstract class SocketClient<CONN : SocketClientConfiguration, REQ : Any, RES : Any, SELF : SocketClient<CONN, REQ, RES, SELF>>(
     private var remainingUsages: Long,
-    private val ioCoroutineContext: CoroutineContext,
     private val onClose: SELF.() -> Unit = {}
 ) : Closeable {
 
@@ -189,9 +186,7 @@ internal abstract class SocketClient<CONN : SocketClientConfiguration, REQ : Any
         block: suspend () -> T
     ): T {
         return try {
-            withContext(ioCoroutineContext) {
-                block()
-            }
+            block()
         } catch (e: TimeoutCancellationException) {
             throw TimeoutException(timeoutMessage)
         }

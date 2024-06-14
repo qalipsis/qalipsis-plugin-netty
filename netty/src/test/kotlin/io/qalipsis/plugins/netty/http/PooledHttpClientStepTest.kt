@@ -159,7 +159,6 @@ internal class PooledHttpClientStepTest {
                 "my-step",
                 null,
                 this.coroutineContext,
-                this,
                 { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
                 configuration,
                 poolConfiguration,
@@ -212,7 +211,6 @@ internal class PooledHttpClientStepTest {
             "my-step",
             null,
             this.coroutineContext,
-            this,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             configuration,
             poolConfiguration,
@@ -250,7 +248,6 @@ internal class PooledHttpClientStepTest {
                 "my-step",
                 null,
                 this.coroutineContext,
-                this,
                 requestExtractor,
                 configuration,
                 poolConfiguration,
@@ -267,7 +264,8 @@ internal class PooledHttpClientStepTest {
 
         // when
         step.execute(ctx)
-        val result = (ctx.output as Channel<StepContext.StepOutputRecord<RequestResult<String, HttpResponse, *>>>).receive().value
+        val result =
+            (ctx.output as Channel<StepContext.StepOutputRecord<RequestResult<String, HttpResponse, *>>>).receive().value
 
         // then
         assertThat(result).all {
@@ -301,7 +299,6 @@ internal class PooledHttpClientStepTest {
                 "my-step",
                 null,
                 this.coroutineContext,
-                this,
                 requestExtractor,
                 configuration,
                 poolConfiguration,
@@ -310,9 +307,9 @@ internal class PooledHttpClientStepTest {
                 eventsLogger,
                 meterRegistry
             ), recordPrivateCalls = true
-        ) 
+        )
         coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request)) } returns response
-        
+
 
         // when
         val result = step.execute(monitoringCollector, ctx, "TEST", request)
@@ -346,7 +343,6 @@ internal class PooledHttpClientStepTest {
                     "my-step",
                     null,
                     this.coroutineContext,
-                    this,
                     requestExtractor,
                     configuration,
                     poolConfiguration,
@@ -355,19 +351,19 @@ internal class PooledHttpClientStepTest {
                     eventsLogger,
                     meterRegistry
                 ), recordPrivateCalls = true
-        ) 
-        coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request)) } returns response
-        
+            )
+            coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request)) } returns response
 
-        // when
-        val result = step.execute(monitoringCollector, ctx, "TEST", request)
 
-        // then
-        assertThat(result).isSameAs(response)
-        coVerifyOnce {
-            step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request))
+            // when
+            val result = step.execute(monitoringCollector, ctx, "TEST", request)
+
+            // then
+            assertThat(result).isSameAs(response)
+            coVerifyOnce {
+                step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request))
+            }
         }
-    }
 
     @Test
     @Timeout(3)
@@ -402,7 +398,6 @@ internal class PooledHttpClientStepTest {
                 "my-step",
                 null,
                 this.coroutineContext,
-                this,
                 requestExtractor,
                 configuration,
                 poolConfiguration,
@@ -411,11 +406,11 @@ internal class PooledHttpClientStepTest {
                 eventsLogger,
                 meterRegistry
             ), recordPrivateCalls = true
-        ) 
-            coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request1)) } returns response1
-            coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request2)) } returns response2
-            coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request3)) } returns response3
-        
+        )
+        coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request1)) } returns response1
+        coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request2)) } returns response2
+        coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), refEq(request3)) } returns response3
+
 
         // when
         val result = step.execute(monitoringCollector, ctx, "TEST", request1)
@@ -453,7 +448,6 @@ internal class PooledHttpClientStepTest {
                 "my-step",
                 null,
                 this.coroutineContext,
-                this,
                 requestExtractor,
                 configuration,
                 poolConfiguration,
@@ -463,7 +457,13 @@ internal class PooledHttpClientStepTest {
                 meterRegistry
             ), recordPrivateCalls = true
         )
-        coEvery { step["doExecute"](refEq(monitoringCollector), refEq(ctx), any<HttpRequest<*>>()) } returns redirectResponse
+        coEvery {
+            step["doExecute"](
+                refEq(monitoringCollector),
+                refEq(ctx),
+                any<HttpRequest<*>>()
+            )
+        } returns redirectResponse
 
 
         // when
@@ -499,7 +499,6 @@ internal class PooledHttpClientStepTest {
                 "my-step",
                 null,
                 this.coroutineContext,
-                this,
                 relaxedMockk(),
                 configuration,
                 poolConfiguration,
@@ -508,27 +507,28 @@ internal class PooledHttpClientStepTest {
                 eventsLogger,
                 meterRegistry
             )
-        val clientsPools =
-            step.getProperty<MutableMap<SocketClient.RemotePeerIdentifier, Pool<HttpClient>>>("clientsPools")
-        clientsPools[SocketClient.RemotePeerIdentifier(InetAddress.getByName("localhost"), 80)] = pool
-        val ctx = StepTestHelper.createStepContext<String, RequestResult<String, HttpResponse, *>>("TEST")
-        val monitoringCollector = StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test")
+            val clientsPools =
+                step.getProperty<MutableMap<SocketClient.RemotePeerIdentifier, Pool<HttpClient>>>("clientsPools")
+            clientsPools[SocketClient.RemotePeerIdentifier(InetAddress.getByName("localhost"), 80)] = pool
+            val ctx = StepTestHelper.createStepContext<String, RequestResult<String, HttpResponse, *>>("TEST")
+            val monitoringCollector =
+                StepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry, "test")
 
-        // when
-        val result = step.coInvokeInvisible<HttpResponse>("doExecute", monitoringCollector, ctx, request)
+            // when
+            val result = step.coInvokeInvisible<HttpResponse>("doExecute", monitoringCollector, ctx, request)
 
-        // then
-        assertThat(result).isSameAs(response)
-        assertThat(clientsPools).all {
-            hasSize(1)
-            key(SocketClient.RemotePeerIdentifier(InetAddress.getByName("localhost"), 80)).isSameAs(pool)
+            // then
+            assertThat(result).isSameAs(response)
+            assertThat(clientsPools).all {
+                hasSize(1)
+                key(SocketClient.RemotePeerIdentifier(InetAddress.getByName("localhost"), 80)).isSameAs(pool)
+            }
+            coVerify {
+                pool.awaitReadiness()
+                pool.withPoolItem<HttpResponse>(any())
+            }
+            confirmVerified(pool)
         }
-        coVerify {
-            pool.awaitReadiness()
-            pool.withPoolItem<HttpResponse>(any())
-        }
-        confirmVerified(pool)
-    }
 
     @Test
     @Timeout(8)
@@ -551,7 +551,6 @@ internal class PooledHttpClientStepTest {
                 "my-step",
                 null,
                 this.coroutineContext,
-                this,
                 relaxedMockk(),
                 configuration,
                 poolConfiguration,

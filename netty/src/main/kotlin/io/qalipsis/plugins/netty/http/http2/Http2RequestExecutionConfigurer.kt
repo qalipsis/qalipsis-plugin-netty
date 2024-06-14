@@ -29,7 +29,6 @@ import io.qalipsis.plugins.netty.http.request.InternalHttpRequest
 import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.monitoring.StepContextBasedSocketMonitoringCollector
 import io.qalipsis.plugins.netty.socket.RequestWriter
-import kotlinx.coroutines.CoroutineScope
 
 /**
  * Implementation of [HttpRequestExecutionConfigurer] for HTTP/2.
@@ -38,8 +37,7 @@ import kotlinx.coroutines.CoroutineScope
  */
 internal class Http2RequestExecutionConfigurer(
     private val clientConfiguration: HttpClientConfiguration,
-    private val pipeline: ChannelPipeline,
-    private val ioCoroutineScope: CoroutineScope
+    private val pipeline: ChannelPipeline
 ) : HttpRequestExecutionConfigurer {
 
     private var streamIdGenerator = Http2ClientStreamIdGeneratorImpl()
@@ -54,8 +52,7 @@ internal class Http2RequestExecutionConfigurer(
             INBOUND_HANDLER,
             Http2ResponseHandler(
                 responseSlot,
-                monitoringCollector as HttpStepContextBasedSocketMonitoringCollector,
-                ioCoroutineScope
+                monitoringCollector as HttpStepContextBasedSocketMonitoringCollector
             )
         )
 
@@ -64,8 +61,7 @@ internal class Http2RequestExecutionConfigurer(
             responseSlot,
             monitoringCollector,
             if (clientConfiguration.isSecure) "https" else "http",
-            streamIdGenerator,
-            ioCoroutineScope
+            streamIdGenerator
         )
     }
 

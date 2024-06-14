@@ -106,8 +106,6 @@ internal class SimpleHttpClientStepIntegrationTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             HttpClientConfiguration().apply {
                 address("localhost", plainServer.port)
@@ -167,8 +165,6 @@ internal class SimpleHttpClientStepIntegrationTest {
         val step = SimpleHttpClientStep<String, String>(
             "my-step",
             null,
-            this,
-            this.coroutineContext,
             { _, _ -> SimpleHttpRequest(HttpMethod.GET, "/") },
             HttpClientConfiguration().apply {
                 address("localhost", plainServer.port)

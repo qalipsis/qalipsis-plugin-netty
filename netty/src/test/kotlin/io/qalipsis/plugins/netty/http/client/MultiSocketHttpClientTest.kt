@@ -38,7 +38,7 @@ internal class MultiSocketHttpClientTest {
     @Test
     internal fun `should close all the clients`() = testDispatcherProvider.run {
         // given
-        val multiSocketHttpClient = MultiSocketHttpClient(1, this, this.coroutineContext)
+        val multiSocketHttpClient = MultiSocketHttpClient(1)
         val clients: MutableMap<SocketClient.RemotePeerIdentifier, Slot<HttpClient>> =
             multiSocketHttpClient getProperty "clients"
 

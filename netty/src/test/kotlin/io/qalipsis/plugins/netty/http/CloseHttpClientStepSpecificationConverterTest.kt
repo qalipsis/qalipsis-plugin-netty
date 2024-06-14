@@ -87,7 +87,6 @@ internal class CloseHttpClientStepSpecificationConverterTest :
                     isInstanceOf(CloseHttpClientStep::class)
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("connectionOwner").isSameAs(connectionOwner)
                 }
             }
@@ -119,7 +118,6 @@ internal class CloseHttpClientStepSpecificationConverterTest :
                     isInstanceOf(CloseHttpClientStep::class)
                     prop("name").isNotNull()
                     prop("retryPolicy").isNull()
-                    prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                     prop("connectionOwner").isSameAs(connectionOwner)
                 }
             }
@@ -148,7 +146,6 @@ internal class CloseHttpClientStepSpecificationConverterTest :
                 isInstanceOf(CloseHttpClientStep::class)
                 prop("name").isNotNull()
                 prop("retryPolicy").isNull()
-                prop("ioCoroutineContext").isSameAs(ioCoroutineContext)
                 prop("connectionOwner").isSameAs(connectionOwner)
             }
         }

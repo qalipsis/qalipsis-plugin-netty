@@ -69,7 +69,6 @@ import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.coVerifyNever
 import io.qalipsis.test.mockk.coVerifyOnce
 import io.qalipsis.test.mockk.relaxedMockk
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -161,7 +160,7 @@ internal class Http2ClientIntegrationTest {
         val monitoringCollector = spyk(HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry))
 
         // when
-        val client = HttpClient(3, this, this.coroutineContext)
+        val client = HttpClient(3)
         client.open(clientConfiguration(), workerGroup, monitoringCollector)
 
         // then
@@ -213,7 +212,7 @@ internal class Http2ClientIntegrationTest {
         val monitoringCollector = spyk(HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry))
 
         // when
-        val client = HttpClient(3, this, this.coroutineContext)
+        val client = HttpClient(3)
         client.open(configuration, workerGroup, monitoringCollector)
 
         // then
@@ -303,7 +302,7 @@ internal class Http2ClientIntegrationTest {
     internal fun `should fail when connecting to a server with invalid port`() = testDispatcherProvider.run {
         // given
         val monitoringCollector = spyk(HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry))
-        val client = HttpClient(3, this, this.coroutineContext)
+        val client = HttpClient(3)
         val exception = assertThrows<ConnectException> {
             client.open(
                 clientConfiguration().apply {
@@ -353,7 +352,7 @@ internal class Http2ClientIntegrationTest {
     internal fun `should fail when connecting to a plain server with HTTPS`() = testDispatcherProvider.run {
         // given
         val monitoringCollector = spyk(HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry))
-        val client = HttpClient(3, this, this.coroutineContext)
+        val client = HttpClient(3)
         val exception = assertThrows<NotSslRecordException> {
             client.open(
                 clientConfiguration().apply {
@@ -409,7 +408,7 @@ internal class Http2ClientIntegrationTest {
         // given
         val tempHttpServer = HttpServer.new(version = HTTP_2_0).apply { start() }
         val monitoringCollector = spyk(HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry))
-        val client = HttpClient(3, this, this.coroutineContext)
+        val client = HttpClient(3)
         val clientConfiguration = clientConfiguration(tempHttpServer)
 
         // when
@@ -468,7 +467,7 @@ internal class Http2ClientIntegrationTest {
     internal fun `should throw a timeout when the server is too long`() = testDispatcherProvider.run {
         // given
         val monitoringCollector = spyk(HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry))
-        val client = HttpClient(3, this, this.coroutineContext)
+        val client = HttpClient(3)
 
         // when
         client.open(
@@ -563,7 +562,7 @@ internal class Http2ClientIntegrationTest {
         request.addHeader(HttpHeaderNames.ACCEPT, HttpHeaderValues.APPLICATION_JSON)
         request.addHeader(HttpHeaderNames.COOKIE, "yummy_cookie=choco; tasty_cookie=strawberry")
 
-        val requestMetadata = exchange(this, configuration, server, ctx, monitoringCollector, request)
+        val requestMetadata = exchange(configuration, server, ctx, monitoringCollector, request)
         assertThat(requestMetadata).all {
             prop(RequestMetadata::uri).isEqualTo(
                 "/get?param1=value1&param1=value2&param2=value3"
@@ -654,7 +653,7 @@ internal class Http2ClientIntegrationTest {
         request.addParameter("param2", "value3")
         request.body("This is a test", HttpHeaderValues.TEXT_PLAIN)
 
-        val requestMetadata = exchange(this, configuration, server, ctx, monitoringCollector, request)
+        val requestMetadata = exchange(configuration, server, ctx, monitoringCollector, request)
         assertThat(requestMetadata).all {
             prop(RequestMetadata::uri).isEqualTo(
                 "/any/url?param1=value1&param1=value2&param2=value3"
@@ -752,7 +751,7 @@ internal class Http2ClientIntegrationTest {
         request.addFileUpload("uploadedFile", zipArchive, "application/x-zip-compressed", false)
 
         val requestMetadata =
-            exchange(this, configuration, server, ctx, monitoringCollector, request)
+            exchange(configuration, server, ctx, monitoringCollector, request)
         assertThat(requestMetadata).all {
             prop(RequestMetadata::uri).isEqualTo("/")
             prop(RequestMetadata::path).isEqualTo("/")
@@ -838,7 +837,7 @@ internal class Http2ClientIntegrationTest {
         request.addAttribute("thirdinfo", "Short text")
         request.addAttribute("fourthinfo", ("M".repeat(98) + "\r\n").repeat(100))
 
-        val requestMetadata = exchange(this, configuration, server, ctx, monitoringCollector, request)
+        val requestMetadata = exchange(configuration, server, ctx, monitoringCollector, request)
 
         assertThat(requestMetadata).all {
             prop(RequestMetadata::uri).isEqualTo("/send/form")
@@ -921,14 +920,13 @@ internal class Http2ClientIntegrationTest {
     }
 
     private suspend fun exchange(
-        coroutineScope: CoroutineScope,
         configuration: HttpClientConfiguration,
         server: HttpServer,
         stepContext: StepContext<*, *>,
         monitoringCollector: HttpStepContextBasedSocketMonitoringCollector,
         request: io.qalipsis.plugins.netty.http.request.HttpRequest<*>
     ): RequestMetadata {
-        val client = HttpClient(2, coroutineScope, coroutineScope.coroutineContext)
+        val client = HttpClient(2)
         val result = try {
             client.open(configuration, workerGroup, monitoringCollector)
             client.execute(stepContext, request, monitoringCollector)
