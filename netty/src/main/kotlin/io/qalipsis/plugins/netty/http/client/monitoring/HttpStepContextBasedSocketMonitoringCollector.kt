@@ -44,17 +44,22 @@ internal class HttpStepContextBasedSocketMonitoringCollector(
      */
     fun recordHttpStatus(status: HttpResponseStatus) {
         eventsLogger?.info(
-            "${eventPrefix}.http-status",
+            "${eventPrefix}.status",
             status.code(),
             tags = eventTags
         )
-        eventTags["status"] = status.code().toString()
-        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-http-status", eventTags)?.report {
+        meterRegistry?.counter(
+            scenarioName,
+            stepName,
+            "${meterPrefix}-status",
+            metersTags + ("status" to status.code().toString())
+        )?.report {
+            display("HTTP Status", ReportMessageSeverity.INFO, row = 3) { 0 }
             display(
-                "status ${status.code()}: %,.0f",
+                "${status.code()}: %,.0f\n",
                 ReportMessageSeverity.INFO,
-                row = 4,
-                column = 0,
+                row = 3,
+                column = 1,
                 Counter::count
             )
         }?.increment()

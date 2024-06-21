@@ -19,6 +19,7 @@ package io.qalipsis.plugins.netty.monitoring
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.meters.CampaignMeterRegistry
+import io.qalipsis.api.meters.Counter
 import io.qalipsis.api.meters.Timer
 import io.qalipsis.api.report.ReportMessageSeverity
 import io.qalipsis.plugins.netty.socket.SocketMonitoringCollector
@@ -51,50 +52,95 @@ internal class StepBasedTcpMonitoringCollector(
 
     private val stepName = context.stepName
 
-    private val connectingCounter =
-        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-connecting", metersTags)
 
-    private val connectedTimer = meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connected", metersTags)
-
-    private val connectionFailureTimer =
-        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connection-failure", metersTags)
-
-    private val tlsConnectedTimer =
-        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-connected", metersTags)
-
-    private val tlsConnectionFailureTimer =
-        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-failure", metersTags)
-
-    override fun recordConnecting() {
-        eventsLogger?.info("${eventPrefix}.connecting", tags = eventsTags)
-        connectingCounter?.report {
-            display("conn. attempts: %,.0f", ReportMessageSeverity.INFO) { count() }
-        }?.increment()
+    private val connectingCounter by lazy {
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-connecting", metersTags)?.report {
+            display("conn.", ReportMessageSeverity.INFO) { 0 }
+            display("\u27B6 %,.0f", ReportMessageSeverity.INFO, column = 1, toNumber = Counter::count)
+        }
     }
 
-    override fun recordConnected(timeToConnect: Duration) {
-        eventsLogger?.info("${eventPrefix}.connected", timeToConnect, tags = eventsTags)
-        connectedTimer?.report {
+    private val connectedTimer by lazy {
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connected", metersTags)?.report {
             display(
                 "\u2713 %,.0f",
                 severity = ReportMessageSeverity.INFO,
                 row = 0,
-                column = 1,
+                column = 2,
                 Timer::count
             )
             display(
                 "mean: %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
                 row = 0,
-                column = 2
+                column = 3
             ) { this.mean(TimeUnit.MILLISECONDS) }
             display(
                 "max: %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
                 row = 0,
-                column = 3
+                column = 4
             ) { this.max(TimeUnit.MILLISECONDS) }
-        }?.record(timeToConnect)
+        }
+    }
+
+    private val connectionFailureTimer by lazy {
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connection-failure", metersTags)?.report {
+            display(
+                "\u2716 %,.0f",
+                severity = ReportMessageSeverity.ERROR,
+                row = 0,
+                column = 5,
+                Timer::count
+            )
+        }
+    }
+
+    private val tlsConnectedTimer by lazy {
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-connected", metersTags)?.report {
+            display("\nTLS", ReportMessageSeverity.INFO, row = 0) { 0 }
+            display(
+                "\n\u2713 %,.0f",
+                severity = ReportMessageSeverity.INFO,
+                row = 0,
+                column = 2,
+                Timer::count
+            )
+            display(
+                "\n       %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 0,
+                column = 3
+            ) { this.mean(TimeUnit.MILLISECONDS) }
+            display(
+                "\n     %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 0,
+                column = 4
+            ) { this.max(TimeUnit.MILLISECONDS) }
+        }
+    }
+
+    private val tlsConnectionFailureTimer by lazy {
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-failure", metersTags)?.report {
+            display(
+                "\u2716 %,.0f",
+                severity = ReportMessageSeverity.ERROR,
+                row = 0,
+                column = 5,
+                Timer::count
+            )
+        }
+    }
+
+    override fun recordConnecting() {
+        eventsLogger?.info("${eventPrefix}.connecting", tags = eventsTags)
+        connectingCounter?.increment()
+    }
+
+    override fun recordConnected(timeToConnect: Duration) {
+        eventsLogger?.info("${eventPrefix}.connected", timeToConnect, tags = eventsTags)
+        connectedTimer?.record(timeToConnect)
     }
 
     override fun recordConnectionFailure(timeToFailure: Duration, throwable: Throwable) {
@@ -104,40 +150,12 @@ internal class StepBasedTcpMonitoringCollector(
             arrayOf(timeToFailure, throwable),
             tags = eventsTags
         )
-        connectionFailureTimer?.report {
-            display(
-                "\u2716 %,.0f",
-                severity = ReportMessageSeverity.ERROR,
-                row = 0,
-                column = 4,
-                Timer::count
-            )
-        }?.record(timeToFailure)
+        connectionFailureTimer?.record(timeToFailure)
     }
 
     override fun recordTlsHandshakeSuccess(timeToConnect: Duration) {
         eventsLogger?.info("${eventPrefix}.tls-connected", timeToConnect, tags = eventsTags)
-        tlsConnectedTimer?.report {
-            display(
-                "TLS: \u2713 %,.0f successes",
-                severity = ReportMessageSeverity.INFO,
-                row = 1,
-                column = 0,
-                Timer::count
-            )
-            display(
-                "mean: %,.3f ms",
-                severity = ReportMessageSeverity.INFO,
-                row = 1,
-                column = 1
-            ) { this.mean(TimeUnit.MILLISECONDS) }
-            display(
-                "max: %,.3f ms",
-                severity = ReportMessageSeverity.INFO,
-                row = 1,
-                column = 2
-            ) { this.max(TimeUnit.MILLISECONDS) }
-        }?.record(timeToConnect)
+        tlsConnectedTimer?.record(timeToConnect)
     }
 
     override fun recordTlsHandshakeFailure(timeToFailure: Duration, throwable: Throwable) {
@@ -147,15 +165,7 @@ internal class StepBasedTcpMonitoringCollector(
             arrayOf(timeToFailure, throwable),
             tags = eventsTags
         )
-        tlsConnectionFailureTimer?.report {
-            display(
-                "\u2716 %,.0f failures",
-                severity = ReportMessageSeverity.ERROR,
-                row = 1,
-                column = 3,
-                Timer::count
-            )
-        }?.record(timeToFailure)
+        tlsConnectionFailureTimer?.record(timeToFailure)
     }
 
     override fun recordSendingData(bytesCount: Int) {

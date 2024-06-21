@@ -65,102 +65,110 @@ internal open class StepContextBasedSocketMonitoringCollector(
 
     private val stepName = stepContext.stepName
 
-    private val connectingCounter =
+    private val connectingCounter by lazy {
         meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-connecting", metersTags)?.report {
-            display("conn. attempts: %,.0f", ReportMessageSeverity.INFO) { count() }
+            display("conn.", ReportMessageSeverity.INFO) { 0 }
+            display("\u27B6 %,.0f", ReportMessageSeverity.INFO, column = 1, toNumber = Counter::count)
         }
+    }
 
-    private val connectedTimer =
+    private val connectedTimer by lazy {
         meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connected", metersTags)?.report {
             display(
                 "\u2713 %,.0f",
                 severity = ReportMessageSeverity.INFO,
                 row = 0,
-                column = 1,
+                column = 2,
                 Timer::count
             )
             display(
                 "mean: %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
                 row = 0,
-                column = 2
+                column = 3
             ) { this.mean(TimeUnit.MILLISECONDS) }
             display(
                 "max: %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
                 row = 0,
-                column = 3
+                column = 4
             ) { this.max(TimeUnit.MILLISECONDS) }
+        }
     }
 
-    private val connectionFailureTimer =
+    private val connectionFailureTimer by lazy {
         meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-connection-failure", metersTags)?.report {
             display(
                 "\u2716 %,.0f",
                 severity = ReportMessageSeverity.ERROR,
                 row = 0,
-                column = 4,
+                column = 5,
                 Timer::count
             )
         }
+    }
 
-    private val tlsConnectedTimer =
+    private val tlsConnectedTimer by lazy {
         meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-connected", metersTags)?.report {
+            display("\nTLS", ReportMessageSeverity.INFO, row = 0) { 0 }
             display(
-                "TLS: \u2713 %,.0f successes",
+                "\n\u2713 %,.0f",
                 severity = ReportMessageSeverity.INFO,
-                row = 1,
-                column = 0,
+                row = 0,
+                column = 2,
                 Timer::count
             )
             display(
-                "mean: %,.3f ms",
+                "\n       %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
-                row = 1,
-                column = 1
+                row = 0,
+                column = 3
             ) { this.mean(TimeUnit.MILLISECONDS) }
             display(
-                "max: %,.3f ms",
+                "\n     %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
-                row = 1,
-                column = 2
+                row = 0,
+                column = 4
             ) { this.max(TimeUnit.MILLISECONDS) }
         }
+    }
 
-    private val tlsConnectionFailureTimer =
+    private val tlsConnectionFailureTimer by lazy {
         meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-tls-failure", metersTags)?.report {
             display(
-                "\u2716 %,.0f failures",
+                "\u2716 %,.0f",
                 severity = ReportMessageSeverity.ERROR,
-                row = 1,
-                column = 3,
+                row = 0,
+                column = 5,
                 Timer::count
             )
         }
+    }
 
     private val sendingRequestCounter =
         meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-request", metersTags)?.report {
-            display("\u2197 %,.0f req", ReportMessageSeverity.INFO, row = 2, column = 0, Counter::count)
-        }
-
-    private val sendingBytesCounter =
-        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-bytes", metersTags)?.report {
-            display("%,.0f bytes", ReportMessageSeverity.INFO, row = 2, column = 1, Counter::count)
+            display("\u2197 Reqs.", ReportMessageSeverity.INFO, row = 1) { 0 }
+            display("\u27B6 %,.0f", ReportMessageSeverity.INFO, row = 1, column = 1, Counter::count)
         }
 
     private val sentRequestCounter =
         meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sent-request", metersTags)?.report {
-            display("\u2713 %,.0f req", ReportMessageSeverity.INFO, row = 2, column = 2, Counter::count)
+            display("\u2713 %,.0f reqs", ReportMessageSeverity.INFO, row = 1, column = 2, Counter::count)
+        }
+
+    private val sendingBytesCounter =
+        meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-bytes", metersTags)?.report {
+            display("\u27B6 %,.0f bytes", ReportMessageSeverity.INFO, row = 1, column = 3, Counter::count)
         }
 
     private val sentBytesCounter =
         meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sent-bytes", metersTags)?.report {
-            display("\u2713 %,.0f bytes", ReportMessageSeverity.INFO, row = 2, column = 3, Counter::count)
+            display("\u2713 %,.0f bytes", ReportMessageSeverity.INFO, row = 1, column = 4, Counter::count)
         }
 
     private val sendingRequestFailureCounter =
         meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-sending-request-failure", metersTags)?.report {
-            display("\u2716 %,.0f req", ReportMessageSeverity.ERROR, row = 2, column = 5, Counter::count)
+            display("\u2716 %,.0f reqs", ReportMessageSeverity.ERROR, row = 1, column = 5, Counter::count)
         }
 
     private val sendingBytesFailureCounter =
@@ -168,35 +176,39 @@ internal open class StepContextBasedSocketMonitoringCollector(
 
     private val receivingDataTimer =
         meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-receiving", metersTags)?.report {
+            display("\u2198 Resp.", ReportMessageSeverity.INFO, row = 2) { 0 }
+            display("1st byte", ReportMessageSeverity.INFO, row = 2, column = 1) { 0 }
             display(
-                "\u2198 1st byte mean: %,.3f ms",
+                "mean: %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
-                row = 3,
-                column = 0
-            ) { this.mean(TimeUnit.MILLISECONDS) }
-            display(
-                "max: %,.3f ms",
-                severity = ReportMessageSeverity.INFO,
-                row = 3,
-                column = 1
-            ) { this.max(TimeUnit.MILLISECONDS) }
-        }
-
-    private val receivedDataTimer =
-        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-received-response", metersTags)?.report {
-            display(
-                "last byte mean: %,.3f ms",
-                severity = ReportMessageSeverity.INFO,
-                row = 3,
+                row = 2,
                 column = 2
             ) { this.mean(TimeUnit.MILLISECONDS) }
             display(
                 "max: %,.3f ms",
                 severity = ReportMessageSeverity.INFO,
-                row = 3,
+                row = 2,
                 column = 3
             ) { this.max(TimeUnit.MILLISECONDS) }
         }
+
+    private val receivedDataTimer by lazy {
+        meterRegistry?.timer(scenarioName, stepName, "${meterPrefix}-received-response", metersTags)?.report {
+            display("\nlast byte", ReportMessageSeverity.INFO, row = 2, column = 1) { 0 }
+            display(
+                "\n      %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 2,
+                column = 2
+            ) { this.mean(TimeUnit.MILLISECONDS) }
+            display(
+                "\n     %,.3f ms",
+                severity = ReportMessageSeverity.INFO,
+                row = 2,
+                column = 3
+            ) { this.max(TimeUnit.MILLISECONDS) }
+        }
+    }
 
     private val receivingDataFailureCounter =
         meterRegistry?.counter(scenarioName, stepName, "${meterPrefix}-receiving-failure", metersTags)
