@@ -16,8 +16,11 @@
 
 package io.qalipsis.plugins.netty.http.request
 
+import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.cookie.Cookie
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 
 /**
  * Description of a HTTP request.
@@ -60,4 +63,18 @@ interface HttpRequest<SELF : HttpRequest<SELF>> {
 
     fun addCookies(vararg cookie: Cookie): SELF
 
+    /**
+     * Adds a basic authentication header to the request.
+     */
+    fun withBasicAuth(username: String, password: String): SELF {
+        headers[HttpHeaderNames.AUTHORIZATION] =
+            "Basic ${BASE_64_ENCODER.encodeToString(("$username:$password").toByteArray(StandardCharsets.UTF_8))}"
+        @Suppress("UNCHECKED_CAST")
+        return this as SELF
+    }
+
+    private companion object {
+
+        val BASE_64_ENCODER: Base64.Encoder = Base64.getEncoder()
+    }
 }
