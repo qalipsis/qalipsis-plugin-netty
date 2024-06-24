@@ -36,7 +36,7 @@ import java.nio.charset.Charset
  *
  * @author Eric Jessé
  */
-data class FormOrMultipartHttpRequest(
+data class FormOrMultipartHttpRequest internal constructor(
     override val method: HttpMethod,
     override val uri: String,
     private val multipart: Boolean = false

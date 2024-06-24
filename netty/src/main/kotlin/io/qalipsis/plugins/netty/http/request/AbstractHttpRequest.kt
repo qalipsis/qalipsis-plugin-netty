@@ -51,7 +51,7 @@ abstract class AbstractHttpRequest<SELF : HttpRequest<SELF>> : HttpRequest<SELF>
      */
     protected fun completeRequest(
         request: io.netty.handler.codec.http.HttpRequest,
-        configuration: HttpClientConfiguration
+        configuration: HttpClientConfiguration,
     ) {
         if (request.headers()[HttpHeaderNames.CONNECTION].isNullOrBlank() && configuration.keepConnectionAlive) {
             request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE)

@@ -63,6 +63,7 @@ import io.qalipsis.plugins.netty.http.server.HttpServer
 import io.qalipsis.plugins.netty.http.server.RequestMetadata
 import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.http.spec.HttpVersion.HTTP_2_0
+import io.qalipsis.plugins.netty.proxy.server.ProxyServer
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
@@ -915,6 +916,46 @@ internal class Http2ClientIntegrationTest {
                     isLessThan(Duration.ofSeconds(4))
                 }
                 prop(HttpITMeters::receivedBytes).isBetween(10740, 10900)
+            }
+        }
+    }
+
+    @ParameterizedTest(name = "should GET a response - {0}")
+    @MethodSource("io.qalipsis.plugins.netty.http.client.Http2ClientIntegrationTest#allConfigurations")
+    @Timeout(TIMEOUT_SECONDS)
+    internal fun `should add an authorization header to a request when specified`(
+        name: String, configuration: HttpClientConfiguration, server: HttpServer
+    ) = testDispatcherProvider.run {
+
+        val request = SimpleHttpRequest(HttpMethod.GET, "/get")
+        request.addParameter("param1", "value1")
+        request.addParameter("param1", "value2")
+        request.addParameter("param2", "value3")
+        request.addHeader(HttpHeaderNames.ACCEPT, HttpHeaderValues.APPLICATION_JSON)
+        request.addHeader(HttpHeaderNames.COOKIE, "yummy_cookie=choco; tasty_cookie=strawberry")
+        request.withBasicAuth("foo", "bar")
+
+        val monitoringCollector = spyk(HttpStepContextBasedSocketMonitoringCollector(ctx, eventsLogger, meterRegistry))
+
+        val requestMetadata = exchange(configuration, server, ctx, monitoringCollector, request)
+
+        assertThat(requestMetadata).all {
+            prop(RequestMetadata::headers).all {
+                key(HttpHeaderNames.ACCEPT.toString()).isEqualTo(HttpHeaderValues.APPLICATION_JSON.toString())
+                key(HttpHeaderNames.HOST.toString()).isEqualTo("localhost:${server.port}")
+                key(HttpHeaderNames.AUTHORIZATION.toString()).isEqualTo("Basic Zm9vOmJhcg==")
+            }
+            prop(RequestMetadata::parameters).all {
+                hasSize(2)
+                key("param1").all {
+                    hasSize(2)
+                    index(0).isEqualTo("value1")
+                    index(1).isEqualTo("value2")
+                }
+                key("param2").all {
+                    hasSize(1)
+                    index(0).isEqualTo("value3")
+                }
             }
         }
     }

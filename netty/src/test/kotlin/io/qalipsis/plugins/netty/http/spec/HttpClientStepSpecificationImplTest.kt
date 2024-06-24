@@ -170,7 +170,7 @@ internal class HttpClientStepSpecificationImplTest {
         internal fun `should add http step to scenario`() {
             val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
             val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: Unit) -> HttpRequest<*> =
-                { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head") }
+                { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head").withBasicAuth("foo", "bar") }
             scenario.netty().http {
                 request(requestSpecification)
                 connect {
@@ -203,6 +203,46 @@ internal class HttpClientStepSpecificationImplTest {
                     prop(StepMonitoringConfiguration::events).isFalse()
                     prop(StepMonitoringConfiguration::meters).isFalse()
                 }
+            }
+        }
+    }
+
+    @Test
+    internal fun `should add the right http headers to the step specification`() {
+        val scenario = TestScenarioFactory.scenario("my-scenario") as StepSpecificationRegistry
+        val requestSpecification: suspend HttpRequestBuilder.(ctx: StepContext<*, *>, input: Unit) -> HttpRequest<*> =
+            { _, _ -> SimpleHttpRequest(HttpMethod.HEAD, "/head").withBasicAuth("foo", "bar") }
+        scenario.netty().http {
+            request(requestSpecification)
+            connect {
+                url("http://localhost:12234")
+            }
+        }.deserialize(Entity::class)
+
+        assertThat(scenario.rootSteps[0]).isInstanceOf(HttpClientStepSpecificationImpl::class).all {
+            prop(HttpClientStepSpecificationImpl<*, *>::requestFactory).isEqualTo(requestSpecification)
+            prop(HttpClientStepSpecificationImpl<*, *>::poolConfiguration).isNull()
+            prop(HttpClientStepSpecificationImpl<*, *>::bodyType).isEqualTo(Entity::class)
+            prop(HttpClientStepSpecificationImpl<*, *>::connectionConfiguration).all {
+                prop(HttpClientConfiguration::version).isEqualTo(HttpVersion.HTTP_1_1)
+                prop(HttpClientConfiguration::host).isEqualTo("localhost")
+                prop(HttpClientConfiguration::port).isEqualTo(12234)
+                prop(HttpClientConfiguration::scheme).isEqualTo("http")
+                prop(HttpClientConfiguration::contextPath).isEqualTo("")
+                prop(HttpClientConfiguration::connectTimeout).isEqualTo(Duration.ofSeconds(10))
+                prop(HttpClientConfiguration::noDelay).isTrue()
+                prop(HttpClientConfiguration::keepConnectionAlive).isTrue()
+                prop(HttpClientConfiguration::charset).isEqualTo(Charsets.UTF_8)
+                prop(HttpClientConfiguration::maxContentLength).isEqualTo(1048576)
+                prop(HttpClientConfiguration::inflate).isFalse()
+                prop(HttpClientConfiguration::followRedirections).isFalse()
+                prop(HttpClientConfiguration::maxRedirections).isEqualTo(10)
+                prop(HttpClientConfiguration::tlsConfiguration).isNull()
+                prop(HttpClientConfiguration::proxyConfiguration).isNull()
+            }
+            prop(HttpClientStepSpecificationImpl<*, *>::monitoringConfiguration).all {
+                prop(StepMonitoringConfiguration::events).isFalse()
+                prop(StepMonitoringConfiguration::meters).isFalse()
             }
         }
     }

@@ -33,7 +33,7 @@ import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
  *
  * @author Eric Jessé
  */
-data class SimpleHttpRequest constructor(
+data class SimpleHttpRequest internal constructor(
     override val method: HttpMethod,
     override val uri: String
 ) : AbstractHttpRequest<SimpleHttpRequest>(),
