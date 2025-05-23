@@ -140,9 +140,10 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         val client = try {
             log.trace { "Acquiring the semaphore to create or acquire the client for the context $context" }
             minionsSemaphores.computeIfAbsent(context.minionId) { Semaphore(1, 0) }.withPermit {
-                createOrAcquireClient(monitoringCollector, context)
+                createOrAcquireClient(context, monitoringCollector)
             }
         } catch (e: Exception) {
+            log.trace(e) { "Discarding the dirty client, because of the error: ${e.message}" }
             clients.remove(context.minionId)?.close()
             clientsInUse.remove(context.minionId)
             minionsSemaphores.remove(context.minionId)
@@ -153,9 +154,13 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         }
 
         return try {
+            log.trace { "Executing the request for the context $context" }
             client.execute(context, request, monitoringCollector)
         } catch (e: Exception) {
+            log.trace(e) { "Discarding the dirty client, because of the error: ${e.message}" }
+            clients.remove(context.minionId)
             client.close()
+
             // The exception is only considered if not already set in the context.
             throw e.takeIf { e is SocketException } ?: SocketException(
                 monitoringCollector.toResult(input, null, e.takeUnless { monitoringCollector.cause === e })
@@ -163,14 +168,17 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
         } finally {
             clientsInUse.remove(context.minionId)
             if (client.isOpen) {
-                log.trace { "Putting the client back to the queue" }
-                clients[context.minionId]?.send(client)
-                if (context.isTail && (!configuration.keepConnectionAlive && client.isExhausted())) {
+                if (!configuration.keepConnectionAlive && context.isTail && client.isExhausted()) {
+                    log.trace { "Closing and discarding the open client because it is no longer necessary" }
+                    clients.remove(context.minionId)
                     client.close()
+                } else {
+                    log.trace { "Putting the client back to the queue" }
+                    clients[context.minionId]?.send(client)
                 }
             } else {
-                log.trace { "Discarding the dirty client" }
-                clients.remove(context.minionId)?.close()
+                log.trace { "Discarding the open client because it is closed" }
+                clients.remove(context.minionId)
             }
         }
     }
@@ -179,8 +187,8 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
      * Creates a new client of acquires it if it already exists.
      */
     suspend fun createOrAcquireClient(
-        monitoringCollector: StepContextBasedSocketMonitoringCollector,
-        context: StepContext<*, *>
+        context: StepContext<*, *>,
+        monitoringCollector: StepContextBasedSocketMonitoringCollector
     ): CLI {
         return if (clients.containsKey(context.minionId)) {
             log.trace { "Reusing the client for the context $context" }
@@ -201,14 +209,15 @@ internal abstract class SimpleSocketClientStep<I, O : Any, CONF : SocketClientCo
      */
     private suspend fun acquireClient(minionId: MinionId): CLI {
         log.trace { "Acquiring client from ${clients[minionId]}" }
-        val client = clients[minionId]?.receiveCatching()?.getOrThrow()?.let {
-            if (!it.isOpen) {
-                clients.remove(minionId)?.close()
-                null
-            } else {
-                it
-            }
-        } ?: throw ClosedClientException(minionId)
+        val client = try {
+            clients[minionId]?.receiveCatching()?.getOrThrow()?.takeIf { it.isOpen }
+        } catch (e: Exception) {
+            log.trace(e) { "Acquiring client from ${clients[minionId]} failed: ${e.message}" }
+            null
+        } ?: run {
+            clients.remove(minionId)?.close()
+            throw ClosedClientException(minionId)
+        }
 
         clientsInUse[minionId] = client
         return client

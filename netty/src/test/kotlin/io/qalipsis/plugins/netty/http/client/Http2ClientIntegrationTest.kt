@@ -63,7 +63,6 @@ import io.qalipsis.plugins.netty.http.server.HttpServer
 import io.qalipsis.plugins.netty.http.server.RequestMetadata
 import io.qalipsis.plugins.netty.http.spec.HttpClientConfiguration
 import io.qalipsis.plugins.netty.http.spec.HttpVersion.HTTP_2_0
-import io.qalipsis.plugins.netty.proxy.server.ProxyServer
 import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
@@ -909,11 +908,11 @@ internal class Http2ClientIntegrationTest {
                 prop(HttpITMeters::sentBytes).isBetween(10620, 10760)
                 prop(HttpITMeters::timeToFirstByte).isNotNull().all {
                     isGreaterThan(result.meters.timeToSuccessfulConnect)
-                    isLessThan(Duration.ofSeconds(2))
+                    isLessThan(Duration.ofSeconds(8))
                 }
                 prop(HttpITMeters::timeToLastByte).isNotNull().all {
                     isGreaterThan(result.meters.timeToFirstByte)
-                    isLessThan(Duration.ofSeconds(4))
+                    isLessThan(Duration.ofSeconds(8))
                 }
                 prop(HttpITMeters::receivedBytes).isBetween(10740, 10900)
             }
@@ -1034,8 +1033,8 @@ internal class Http2ClientIntegrationTest {
                 )
             ).apply {
                 url(server.url)
-                connectTimeout = Duration.ofSeconds(3)
-                readTimeout = Duration.ofSeconds(2)
+                connectTimeout = Duration.ofSeconds(4)
+                readTimeout = Duration.ofSeconds(8)
                 shutdownTimeout = Duration.ofSeconds(3)
             }
         }

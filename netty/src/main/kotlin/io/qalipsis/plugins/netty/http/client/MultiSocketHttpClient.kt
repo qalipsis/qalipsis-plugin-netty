@@ -62,6 +62,9 @@ internal class MultiSocketHttpClient(
      */
     private val borrowedClients = ConcurrentHashMap<RemotePeerIdentifier, HttpClient>()
 
+    /**
+     * Mutexes attached to each remote host.
+     */
     private val peerMutexes = ConcurrentHashMap<RemotePeerIdentifier, Mutex>()
 
     private lateinit var workerGroup: EventLoopGroup
@@ -83,15 +86,20 @@ internal class MultiSocketHttpClient(
     }
 
     override suspend fun close() {
+        log.trace { "Closing the HTTP client" }
         open = false
+        log.trace { "Closing enclosed ${clients.size} clients" }
         clients.values.forEach {
             tryAndLogOrNull(log) { it.get().close() }
         }
+        borrowedClients.clear()
         clients.clear()
+        log.trace { "HTTP client is now closed" }
         try {
             this.onClose()
         } catch (e: Exception) {
-            log.warn(e) { e.message }
+            log.trace { "Close hook on the HTTP client threw an exception: ${e.message}" }
+            log.info(e) { e.message }
         }
     }
 
@@ -134,7 +142,7 @@ internal class MultiSocketHttpClient(
         return response
     }
 
-    private tailrec suspend fun doExecute(
+    private suspend fun doExecute(
         monitoringCollector: StepContextBasedSocketMonitoringCollector,
         context: StepContext<*, *>,
         request: HttpRequest<*>
@@ -163,10 +171,17 @@ internal class MultiSocketHttpClient(
             }
         } else {
             // If the client is not open, we close it properly and recreate a new one.
+            log.trace { "The client for the remote peer $requestPeerIdentifier is not open, creating a new one" }
+            clients.remove(requestPeerIdentifier)
             client.close()
             doExecute(monitoringCollector, context, request)
         }
     }
+
+    override fun toString(): String {
+        return "MultiSocketHttpClient(open=$open)"
+    }
+
 
     companion object {
 

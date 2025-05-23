@@ -109,7 +109,6 @@ internal abstract class SocketClient<CONN : SocketClientConfiguration, REQ : Any
             option(ChannelOption.SO_RCVBUF, config.receiveBufferSize)
             option(ChannelOption.SO_SNDBUF, config.sendBufferSize)
             option(ChannelOption.SO_KEEPALIVE, config.keepConnectionAlive)
-
             config.nettyChannelOptions.forEach { (option, value) ->
                 @Suppress("UNCHECKED_CAST")
                 option(option as ChannelOption<Any>, value)

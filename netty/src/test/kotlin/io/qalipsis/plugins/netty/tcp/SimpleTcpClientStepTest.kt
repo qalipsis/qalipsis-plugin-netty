@@ -18,11 +18,23 @@ package io.qalipsis.plugins.netty.tcp
 
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.hasSize
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isNotNull
+import assertk.assertions.isSameAs
+import assertk.assertions.isTrue
+import assertk.assertions.key
+import assertk.assertions.prop
 import io.aerisconsulting.catadioptre.getProperty
 import io.aerisconsulting.catadioptre.setProperty
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.slot
+import io.mockk.spyk
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.context.MinionId
 import io.qalipsis.api.context.StepContext
@@ -46,7 +58,6 @@ import io.qalipsis.test.mockk.relaxedMockk
 import io.qalipsis.test.steps.StepTestHelper
 import kotlinx.coroutines.channels.Channel
 import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -276,7 +287,7 @@ internal class SimpleTcpClientStepTest {
                     meterRegistry
                 )
             ) {
-                coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } throws RuntimeException()
+                coEvery { createOrAcquireClient(refEq(ctx), refEq(monitoringCollector)) } throws RuntimeException()
             }
             step.setProperty("running", true)
             val client1 = relaxedMockk<TcpClient>()
@@ -335,7 +346,7 @@ internal class SimpleTcpClientStepTest {
                     meterRegistry
                 )
             ) {
-                coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } returns client
+                coEvery { createOrAcquireClient(refEq(ctx), refEq(monitoringCollector)) } returns client
             }
             step.setProperty("running", true)
 
@@ -375,7 +386,7 @@ internal class SimpleTcpClientStepTest {
                 meterRegistry
             )
         ) {
-            coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } returns client
+            coEvery { createOrAcquireClient(refEq(ctx), refEq(monitoringCollector)) } returns client
         }
         step.setProperty("running", true)
         val clients = step.getProperty<MutableMap<MinionId, Channel<TcpClient>>>("clients").apply {
@@ -425,7 +436,7 @@ internal class SimpleTcpClientStepTest {
         val clientsInUse = step.getProperty<MutableMap<MinionId, TcpClient>>("clientsInUse")
 
         // when
-        val acquiredClient = step.createOrAcquireClient(monitoringCollector, ctx)
+        val acquiredClient = step.createOrAcquireClient(ctx, monitoringCollector)
 
         // then
         assertThat(acquiredClient).isSameAs(client)
@@ -465,7 +476,7 @@ internal class SimpleTcpClientStepTest {
         val clientsInUse = step.getProperty<MutableMap<MinionId, TcpClient>>("clientsInUse")
 
         // when
-        val acquiredClient = step.createOrAcquireClient(monitoringCollector, ctx)
+        val acquiredClient = step.createOrAcquireClient(ctx, monitoringCollector)
 
         // then
         assertThat(acquiredClient).isSameAs(client)
@@ -506,7 +517,7 @@ internal class SimpleTcpClientStepTest {
 
         // when
         assertThrows<ClosedClientException> {
-            step.createOrAcquireClient(monitoringCollector, ctx)
+            step.createOrAcquireClient(ctx, monitoringCollector)
         }
 
         // then
