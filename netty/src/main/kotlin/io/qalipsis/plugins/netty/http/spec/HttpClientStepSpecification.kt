@@ -32,7 +32,7 @@ import io.qalipsis.plugins.netty.tcp.ConnectionAndRequestResult
 import io.qalipsis.plugins.netty.tcp.spec.SocketClientPoolConfiguration
 import kotlin.reflect.KClass
 
-internal interface HttpClientStepSpecification<INPUT, OUTPUT> :
+interface HttpClientStepSpecification<INPUT, OUTPUT> :
     NettyPluginSpecification<INPUT, ConnectionAndRequestResult<INPUT, HttpResponse<OUTPUT>>, HttpClientStepSpecification<INPUT, OUTPUT>>,
     ConfigurableStepSpecification<INPUT, ConnectionAndRequestResult<INPUT, HttpResponse<OUTPUT>>, HttpClientStepSpecification<INPUT, OUTPUT>> {
 
@@ -118,7 +118,7 @@ internal class HttpClientStepSpecificationImpl<INPUT, OUTPUT> :
  *
  * @author Eric Jessé
  */
-internal fun <INPUT> NettyPluginSpecification<*, INPUT, *>.http(
+fun <INPUT> NettyPluginSpecification<*, INPUT, *>.http(
     configurationBlock: HttpClientStepSpecification<INPUT, String>.() -> Unit
 ): HttpClientStepSpecification<INPUT, String> {
     val step = HttpClientStepSpecificationImpl<INPUT, String>()
@@ -136,7 +136,7 @@ internal fun <INPUT> NettyPluginSpecification<*, INPUT, *>.http(
  *
  * @author Eric Jessé
  */
-internal fun NettyScenarioSpecification.http(
+fun NettyScenarioSpecification.http(
     configurationBlock: HttpClientStepSpecification<Unit, String>.() -> Unit
 ): HttpClientStepSpecification<Unit, String> {
     val step = HttpClientStepSpecificationImpl<Unit, String>()
@@ -151,7 +151,7 @@ internal fun NettyScenarioSpecification.http(
  * @author Eric Jessé
  */
 @Spec
-internal class QueryHttpClientStepSpecification<INPUT, OUTPUT>(val stepName: String) :
+class QueryHttpClientStepSpecification<INPUT, OUTPUT>(val stepName: String) :
     AbstractStepSpecification<INPUT, RequestResult<INPUT, HttpResponse<OUTPUT>, *>, QueryHttpClientStepSpecification<INPUT, OUTPUT>>(),
     NettyPluginSpecification<INPUT, RequestResult<INPUT, HttpResponse<OUTPUT>, *>, QueryHttpClientStepSpecification<INPUT, OUTPUT>> {
 
@@ -188,7 +188,7 @@ internal class QueryHttpClientStepSpecification<INPUT, OUTPUT>(val stepName: Str
  *
  * @author Eric Jessé
  */
-internal fun <INPUT> NettyPluginSpecification<*, INPUT, *>.httpWith(
+fun <INPUT> NettyPluginSpecification<*, INPUT, *>.httpWith(
     stepName: String,
     configurationBlock: QueryHttpClientStepSpecification<INPUT, String>.() -> Unit
 ): QueryHttpClientStepSpecification<INPUT, String> {

@@ -65,7 +65,6 @@ import io.qalipsis.test.mockk.verifyOnce
 import io.qalipsis.test.steps.StepTestHelper
 import kotlinx.coroutines.channels.Channel
 import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -318,7 +317,7 @@ internal class SimpleHttpClientStepTest {
                     meterRegistry
                 )
             ) {
-                coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } throws RuntimeException()
+                coEvery { createOrAcquireClient(refEq(ctx), refEq(monitoringCollector)) } throws RuntimeException()
             }
             step.setProperty("running", true)
             val client1 = relaxedMockk<MultiSocketHttpClient>()
@@ -379,7 +378,7 @@ internal class SimpleHttpClientStepTest {
                     meterRegistry
                 )
             ) {
-                coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } returns client
+                coEvery { createOrAcquireClient(refEq(ctx), refEq(monitoringCollector)) } returns client
             }
             step.setProperty("running", true)
 
@@ -421,7 +420,7 @@ internal class SimpleHttpClientStepTest {
                 meterRegistry
             )
         ) {
-            coEvery { createOrAcquireClient(refEq(monitoringCollector), refEq(ctx)) } returns client
+            coEvery { createOrAcquireClient(refEq(ctx), refEq(monitoringCollector)) } returns client
         }
         step.setProperty("running", true)
         val clients = step.getProperty<MutableMap<MinionId, Channel<MultiSocketHttpClient>>>("clients").apply {
@@ -473,7 +472,7 @@ internal class SimpleHttpClientStepTest {
         val clientsInUse = step.getProperty<MutableMap<MinionId, MultiSocketHttpClient>>("clientsInUse")
 
         // when
-        val acquiredClient = step.createOrAcquireClient(monitoringCollector, ctx)
+        val acquiredClient = step.createOrAcquireClient(ctx, monitoringCollector)
 
         // then
         assertThat(acquiredClient).isSameAs(client)
@@ -515,7 +514,7 @@ internal class SimpleHttpClientStepTest {
         val clientsInUse = step.getProperty<MutableMap<MinionId, MultiSocketHttpClient>>("clientsInUse")
 
         // when
-        val acquiredClient = step.createOrAcquireClient(monitoringCollector, ctx)
+        val acquiredClient = step.createOrAcquireClient(ctx, monitoringCollector)
 
         // then
         assertThat(acquiredClient).isSameAs(client)
@@ -558,7 +557,7 @@ internal class SimpleHttpClientStepTest {
 
         // when
         assertThrows<ClosedClientException> {
-            step.createOrAcquireClient(monitoringCollector, ctx)
+            step.createOrAcquireClient(ctx, monitoringCollector)
         }
 
         // then

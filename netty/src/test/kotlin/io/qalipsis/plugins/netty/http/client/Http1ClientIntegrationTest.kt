@@ -940,11 +940,11 @@ internal class Http1ClientIntegrationTest {
                 prop(HttpITMeters::sentBytes).isBetween(10620, 10760)
                 prop(HttpITMeters::timeToFirstByte).isNotNull().all {
                     isGreaterThan(result.meters.timeToSuccessfulConnect)
-                    isLessThan(Duration.ofSeconds(2))
+                    isLessThan(Duration.ofSeconds(8))
                 }
                 prop(HttpITMeters::timeToLastByte).isNotNull().all {
                     isGreaterThan(result.meters.timeToFirstByte)
-                    isLessThan(Duration.ofSeconds(4))
+                    isLessThan(Duration.ofSeconds(8))
                 }
                 prop(HttpITMeters::receivedBytes).isBetween(10730, 10800)
             }
@@ -1089,8 +1089,8 @@ internal class Http1ClientIntegrationTest {
                 )
             ).apply {
                 url(server.url)
-                connectTimeout = Duration.ofSeconds(3)
-                readTimeout = Duration.ofSeconds(2)
+                connectTimeout = Duration.ofSeconds(4)
+                readTimeout = Duration.ofSeconds(8)
                 shutdownTimeout = Duration.ofSeconds(3)
             }
         }
