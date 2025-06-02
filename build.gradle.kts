@@ -42,7 +42,8 @@ licenseReport {
         )
     )
     allowedLicensesFile = File("$projectDir/build-config/allowed-licenses.json")
-    filters = arrayOf<com.github.jk1.license.filter.DependencyFilter>(com.github.jk1.license.filter.LicenseBundleNormalizer())
+    filters =
+        arrayOf<com.github.jk1.license.filter.DependencyFilter>(com.github.jk1.license.filter.LicenseBundleNormalizer())
 }
 
 /**
@@ -101,6 +102,10 @@ allprojects {
         mavenCentral()
         maven {
             name = "maven-central-snapshots"
+            setUrl("https://central.sonatype.com/repository/maven-snapshots")
+        }
+        maven {
+            name = "ossrh-snapshots"
             setUrl("https://oss.sonatype.org/content/repositories/snapshots")
         }
     }
@@ -117,8 +122,8 @@ allprojects {
         }
     }
 
-    val ossrhUsername: String? by project
-    val ossrhPassword: String? by project
+    val mavenCentralUsername: String? by project
+    val mavenCentralPassword: String? by project
     publishing {
         publications {
             filterIsInstance<MavenPublication>().forEach {
@@ -127,14 +132,22 @@ allprojects {
         }
         repositories {
             mavenLocal()
-            maven {
-                val releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                val snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                name = "sonatype"
-                url = uri(if (project.version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                credentials {
-                    username = ossrhUsername
-                    password = ossrhPassword
+            if (project.version.toString().endsWith("SNAPSHOT")) {
+                maven {
+                    val snapshotsRepoUrl = "https://central.sonatype.com/repository/maven-snapshots/"
+                    name = "sonatype"
+                    url = uri(snapshotsRepoUrl)
+                    credentials {
+                        username = mavenCentralUsername
+                        password = mavenCentralPassword
+                    }
+                }
+            } else {
+                mavenCentral {
+                    credentials {
+                        username = mavenCentralUsername
+                        password = mavenCentralPassword
+                    }
                 }
             }
         }
