@@ -29,7 +29,7 @@ tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.majorVersion
         javaParameters = true
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     }
 }
 
@@ -64,26 +64,28 @@ val pluginPlatformVersion: String by project
 
 dependencies {
     implementation(platform("io.qalipsis:qalipsis-plugin-platform:${pluginPlatformVersion}"))
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+    implementation(group = "io.netty", name = "netty-transport-native-epoll", classifier = "linux-x86_64")
+    implementation(group = "io.netty", name = "netty-transport-native-kqueue", classifier = "osx-x86_64")
+    implementation("com.github.ben-manes.caffeine:caffeine")
+    implementation("com.google.guava:guava")
+
     compileOnly("io.aeris-consulting:catadioptre-annotations")
     compileOnly("io.micronaut:micronaut-runtime")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+
+    api("io.qalipsis:qalipsis-api-common")
+    api("io.qalipsis:qalipsis-api-dsl")
     api("io.netty:netty-handler")
     api("io.netty:netty-handler-proxy")
     api("io.netty:netty-transport")
-    implementation(group = "io.netty", name = "netty-transport-native-epoll", classifier = "linux-x86_64")
-    implementation(group = "io.netty", name = "netty-transport-native-kqueue", classifier = "osx-x86_64")
     api("io.netty:netty-buffer")
     api("io.netty:netty-codec")
     api("io.netty:netty-codec-http")
     api("io.netty:netty-codec-http2")
     api("io.netty:netty-codec-mqtt")
-    implementation("com.github.ben-manes.caffeine:caffeine")
-    implementation("com.google.guava:guava")
-
-    api("io.qalipsis:qalipsis-api-common")
-    api("io.qalipsis:qalipsis-api-dsl")
 
     kapt(platform("io.qalipsis:qalipsis-plugin-platform:${pluginPlatformVersion}"))
     kapt("io.qalipsis:qalipsis-api-processors")

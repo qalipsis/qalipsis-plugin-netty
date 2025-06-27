@@ -19,7 +19,7 @@ package io.qalipsis.plugins.netty.http.response
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.micronaut.jackson.modules.BeanIntrospectionModule
 import io.qalipsis.api.annotations.PluginComponent
 import kotlin.reflect.KClass
@@ -34,7 +34,7 @@ internal class XmlHttpBodyDeserializer : HttpBodyDeserializer {
 
     private val mapper = XmlMapper().apply {
         registerModule(BeanIntrospectionModule())
-        registerModule(kotlinModule())
+        registerModule(KotlinModule.Builder().build())
         registerModule(JavaTimeModule())
         registerModule(Jdk8Module())
     }

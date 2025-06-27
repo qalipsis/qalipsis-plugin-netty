@@ -21,8 +21,8 @@ import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jsonMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import io.micronaut.jackson.modules.BeanIntrospectionModule
 import io.qalipsis.api.annotations.PluginComponent
 import kotlin.reflect.KClass
@@ -36,7 +36,7 @@ import kotlin.reflect.KClass
 internal class JsonHttpBodyDeserializer : HttpBodyDeserializer {
 
     private val mapper = jsonMapper {
-        addModule(kotlinModule())
+        addModule(KotlinModule.Builder().build())
         addModule(Jdk8Module())
         addModule(JavaTimeModule())
         addModule(BeanIntrospectionModule())
