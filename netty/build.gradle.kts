@@ -1,17 +1,20 @@
 /*
- * Copyright 2022 AERIS IT Solutions GmbH
+ * QALIPSIS
+ * Copyright (C) 2025 AERIS IT Solutions GmbH
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -29,7 +32,7 @@ tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.majorVersion
         javaParameters = true
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
     }
 }
 
@@ -64,26 +67,28 @@ val pluginPlatformVersion: String by project
 
 dependencies {
     implementation(platform("io.qalipsis:qalipsis-plugin-platform:${pluginPlatformVersion}"))
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+    implementation(group = "io.netty", name = "netty-transport-native-epoll", classifier = "linux-x86_64")
+    implementation(group = "io.netty", name = "netty-transport-native-kqueue", classifier = "osx-x86_64")
+    implementation("com.github.ben-manes.caffeine:caffeine")
+    implementation("com.google.guava:guava")
+
     compileOnly("io.aeris-consulting:catadioptre-annotations")
     compileOnly("io.micronaut:micronaut-runtime")
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+
+    api("io.qalipsis:qalipsis-api-common")
+    api("io.qalipsis:qalipsis-api-dsl")
     api("io.netty:netty-handler")
     api("io.netty:netty-handler-proxy")
     api("io.netty:netty-transport")
-    implementation(group = "io.netty", name = "netty-transport-native-epoll", classifier = "linux-x86_64")
-    implementation(group = "io.netty", name = "netty-transport-native-kqueue", classifier = "osx-x86_64")
     api("io.netty:netty-buffer")
     api("io.netty:netty-codec")
     api("io.netty:netty-codec-http")
     api("io.netty:netty-codec-http2")
     api("io.netty:netty-codec-mqtt")
-    implementation("com.github.ben-manes.caffeine:caffeine")
-    implementation("com.google.guava:guava")
-
-    api("io.qalipsis:qalipsis-api-common")
-    api("io.qalipsis:qalipsis-api-dsl")
 
     kapt(platform("io.qalipsis:qalipsis-plugin-platform:${pluginPlatformVersion}"))
     kapt("io.qalipsis:qalipsis-api-processors")
